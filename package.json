@@ -1,0 +1,27 @@
+{
+  "name": "svg-chameleon",
+  "version": "0.0.1",
+  "description": "A node module used for creating a customizable SVG sprite, containing SVGs as symbols that can be customized in the frontend using CSS variables and more.",
+  "main": "index.js",
+  "bin": "./index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@git.team23.de:team23/svg-chameleon.git"
+  },
+  "keywords": [
+    "svg",
+    "sprite"
+  ],
+  "author": "Christian Reichart",
+  "license": "ISC",
+  "dependencies": {
+    "chalk": "^4.1.0",
+    "mkdirp": "^1.0.4",
+    "svg-sprite": "^1.5.0",
+    "svgo": "^1.3.2",
+    "svgson": "^4.1.0"
+  }
+}

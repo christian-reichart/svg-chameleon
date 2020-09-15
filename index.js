@@ -1,0 +1,226 @@
+#! /usr/bin/env node
+
+const fs = require('fs');
+const mkdirp = require ('mkdirp');
+const path = require('path');
+const chalk = require('chalk');
+const svgson = require('svgson');
+const SVGO = require('svgo');
+const SVGSpriter = require ('svg-sprite');
+
+// TODO: Add yargs for CLI arguments
+const ARGS = process.argv.slice(2);
+const SVG_FOLDER = getFolderPath(ARGS[0]);
+const SVG_SPRITE_SUBFOLDER = 'chameleon-sprite';
+const SVG_SPRITE_NAME = 'chameleon-sprite.svg';
+const SPRITER_CONFIG = {
+  dest: SVG_FOLDER,
+  svg: {
+    xmlDeclaration: false,
+    doctypeDeclaration: false,
+  },
+  mode: {
+    inline: true,
+    symbol: {
+      dest: SVG_SPRITE_SUBFOLDER,
+      sprite: SVG_SPRITE_NAME,
+    }
+  },
+};
+const CHAMELEON_CONFIG = {
+  colors: {
+    modifiable: true,
+    naming: 'svg-custom-color',
+    preserveOriginal: true,
+  },
+  strokeWidths: {
+    modifiable: true,
+    naming: 'svg-custom-stroke-width',
+  }
+};
+// This SVGO configuration converts styles from a <style> tag to inline attributes
+const SVGO_CONFIG = {
+  plugins: [{
+    inlineStyles: {
+      onlyMatchedOnce: false
+    }
+  }]
+}
+const spriter = new SVGSpriter(SPRITER_CONFIG);
+const svgo = new SVGO(SVGO_CONFIG);
+
+(async () => {
+  // Creating the basic sprite using svg-sprite
+  console.log(`Creating SVG symbols sprite inside ${SVG_FOLDER}${SVG_SPRITE_SUBFOLDER}/...`);
+  await createSprite().catch(handleError);
+  // After creation, read sprite and inject it with variables
+  // Orignal sprite is then overridden
+  console.log(`Injecting variables in ${SVG_SPRITE_NAME} to be customizable via CSS...`);
+  await createInjectableSprite().catch(handleError);
+  // Done!
+  console.log(chalk.green('Task complete!'));
+})();
+
+async function createSprite() {
+  let svgs;
+  // Add all SVGs to sprite
+  try {
+    svgs = fs.readdirSync(SVG_FOLDER);
+  } catch(err) {
+    throw err;
+  }
+  for(const item of svgs) {
+    let file;
+    let optimizedFile;
+    if(item.endsWith('.svg')) {
+      try {
+        file = fs.readFileSync(SVG_FOLDER + item, { encoding: 'utf-8' });
+        optimizedFile = await svgo.optimize(file, {path: SVG_FOLDER + item});
+        spriter.add(path.resolve(SVG_FOLDER + item), null, optimizedFile.data);
+      } catch (err) {
+        throw err;
+      }
+    }
+  };
+  // Compile the sprite
+  spriter.compile(function(err, result) {
+    if(err) {
+      throw err;
+    }
+    for (var mode in result) {
+        for (var resource in result[mode]) {
+            mkdirp.sync(path.dirname(result[mode][resource].path));
+            fs.writeFileSync(result[mode][resource].path, result[mode][resource].contents);
+        }
+    }
+  });
+}
+
+async function createInjectableSprite() {
+  let jsonSprite = getSvgJson(`${SVG_FOLDER}${SVG_SPRITE_SUBFOLDER}/${SVG_SPRITE_NAME}`);
+  let modifiedJsonSprite = injectVariables(jsonSprite);
+  fs.writeFileSync(`${SVG_FOLDER}${SVG_SPRITE_SUBFOLDER}/${SVG_SPRITE_NAME}`, svgson.stringify(modifiedJsonSprite));
+}
+
+function injectVariables(jsonSprite) {
+  let spriteCopy = JSON.parse(JSON.stringify(jsonSprite));
+
+  spriteCopy.children.forEach(symbol => {
+    modifyAttributes(symbol,new Map(),new Map());
+  });
+  return spriteCopy;
+}
+
+function modifyAttributes(el, registeredColors, registeredStrokeWidths) {
+  // TODO: Make Gradients work! (stop-color)
+  if(el.attributes){
+    // FILL
+    let fill = el.attributes.fill;
+    if(fill && isValidPaint(fill)) {
+      if(registeredColors.get(fill)) {
+        // If fill color has already an assigned variable
+        el.attributes.fill = registeredColors.get(fill);
+      } else {
+        // If fill is a new color (gets registered)
+        let varFill = variablizeColor(fill, registeredColors.size + 1);
+        registeredColors.set(fill, varFill);
+        el.attributes.fill = varFill;
+      }
+    }
+    // STROKE
+    let stroke = el.attributes.stroke;
+    if(stroke && isValidPaint(stroke)) {
+      if(registeredColors.get(stroke)) {
+        // If stroke has already an assigned variable
+        el.attributes.stroke = registeredColors.get(stroke);
+      } else {
+        // If color is a new color (gets registered)
+        let varStroke = variablizeColor(stroke, registeredColors.size + 1);
+        registeredColors.set(stroke, varStroke);
+        el.attributes.stroke = varStroke;
+      }
+    }
+    // STROKE-WIDTH
+    let strokeWidth = el.attributes['stroke-width'];
+    if(strokeWidth && isValidLength(strokeWidth)) {
+      if(registeredStrokeWidths.get(strokeWidth)) {
+        // If stroke-width has already an assigned variable
+        el.attributes['stroke-width'] = registeredStrokeWidths.get(strokeWidth);
+      } else {
+        // If stroke-width is a new stroke-width (gets registered)
+        let varStrokeWidth = variablizeStrokeWidth(strokeWidth, registeredStrokeWidths.size + 1);
+        registeredStrokeWidths.set(strokeWidth, varStrokeWidth);
+        el.attributes['stroke-width'] = varStrokeWidth;
+      }
+    }
+  }
+  // RECURSIVE FOR ALL CHILDREN
+  if(el.children.length) {
+    el.children.forEach(child => {
+      modifyAttributes(child, registeredColors, registeredStrokeWidths);
+    });
+  }
+}
+
+function variablizeColor(p_color, id) {
+  const varStrSpecific = `--${CHAMELEON_CONFIG.colors.naming}-${id}`;
+  const varStrGeneral = `--${CHAMELEON_CONFIG.colors.naming}`;
+  const color = CHAMELEON_CONFIG.colors.preserveOriginal ? p_color : 'currentColor';
+  return `var(${varStrSpecific}, var(${varStrGeneral}, ${color}))`;
+}
+
+function variablizeStrokeWidth(strokeWidth, id) {
+  const varStrSpecific = `--${CHAMELEON_CONFIG.strokeWidths.naming}-${id}`;
+  const varStrGeneral = `--${CHAMELEON_CONFIG.strokeWidths.naming}`;
+  return `var(${varStrSpecific}, var(${varStrGeneral}, ${strokeWidth}))`;
+}
+
+function isValidLength(str) {
+  const trimmedStr = String(str).trim();
+  // Check if CSS length unit
+  if(trimmedStr.match(/(\d*\.?\d+)\s?(px|em|ex|%|in|cn|mm|pt|pc+)?/i)) {
+    return true;
+  }
+  return false;
+}
+
+function isValidPaint(str) {
+  const trimmedStr = String(str).trim();
+  const htmlColorNames = [
+    'black','silver','gray','white','maroon','red','purple','purple','fuchsia',
+    'green','lime','olive','yellow','navy','blue','teal','aqua'
+  ]
+  // Check for Hex or HTML color name
+  if (trimmedStr.match(/^#(?:[0-9a-f]{3}){1,2}$/i) || htmlColorNames.includes(trimmedStr.toLowerCase())) {
+    return true;
+  }
+  // TODO: RGB, RGBA, "transparent", just check if valid Paint Unit...
+  // https://www.w3.org/TR/SVG/painting.html#SpecifyingPaint
+  // Question: allow "none" to be customizable?
+  // Basically just check if not already "var()" is enough??
+  return false;
+}
+
+function getSvgJson(path) {
+  let file;
+  try {
+    file = fs.readFileSync(path);
+  } catch (err) {
+    console.error(err);
+  }
+  return svgson.parseSync(file.toString());
+}
+
+function getFolderPath(arg) {
+  const defaultFolder = '/src/assets/svg/';
+  if(!arg) {
+    console.log(chalk.yellow(`No SVG folder specified, defaulting to '${defaultFolder}'.`));
+    return process.cwd() + defaultFolder;
+  } else {
+    return arg.endsWith('/') ? process.cwd() + arg : process.cwd() + arg +'/';
+  }
+}
+
+function handleError(err) {
+  console.error(err);
+}
