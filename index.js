@@ -49,18 +49,24 @@ const spriter = new SVGSpriter(SPRITER_CONFIG);
 const svgo = new SVGO(SVGO_CONFIG);
 
 (async () => {
+  await create();
+})();
+
+module.exports.create = create;
+
+async function create() {
   // Creating the basic sprite using svg-sprite
-  console.log(`Creating SVG symbols sprite inside ${SVG_FOLDER}${SVG_SPRITE_SUBFOLDER}/...`);
-  await createSprite().catch(handleError);
+  console.log(`Creating basic sprite inside ${SVG_FOLDER}${SVG_SPRITE_SUBFOLDER}/...`);
+  await createRegularSprite().catch(handleError);
   // After creation, read sprite and inject it with variables
   // Orignal sprite is then overridden
-  console.log(`Injecting variables in ${SVG_SPRITE_NAME} to be customizable via CSS...`);
+  console.log(`Injecting variables...`);
   await createInjectableSprite().catch(handleError);
   // Done!
   console.log(chalk.green('Task complete!'));
-})();
+}
 
-async function createSprite() {
+async function createRegularSprite() {
   let svgs;
   // Add all SVGs to sprite
   try {
