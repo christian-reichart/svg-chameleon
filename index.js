@@ -1,7 +1,6 @@
 #! /usr/bin/env node
 
 const fs = require('fs');
-const mkdirp = require ('mkdirp');
 const path = require('path');
 const chalk = require('chalk');
 const svgson = require('svgson');
@@ -89,7 +88,7 @@ async function createSprite() {
     }
     for (var mode in result) {
         for (var resource in result[mode]) {
-            mkdirp.sync(path.dirname(result[mode][resource].path));
+            fs.mkdirSync(path.dirname(result[mode][resource].path), { recursive: true });
             fs.writeFileSync(result[mode][resource].path, result[mode][resource].contents);
         }
     }
