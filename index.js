@@ -11,6 +11,7 @@ let opts = {
   path: '',
   subfolder: 'chameleon-sprite',
   name: 'chameleon-sprite',
+  transition: '',
   colors: {
     modifiable: true,
     naming: 'svg-custom-color',
@@ -19,9 +20,8 @@ let opts = {
   strokeWidths: {
     modifiable: true,
     naming: 'svg-custom-stroke-width',
-    nonScaling: true,
+    nonScaling: false,
   },
-  transition: 'all .3s ease'
 };
 
 let svgCount = 0;
