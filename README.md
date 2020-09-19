@@ -1,26 +1,33 @@
 # SVG Chameleon
 
-With SVG Chameleon you can transform your SVG files into a sprite of symbols, that can be implemented in the frontend via ```<use>```. They can then be manipulated via CSS to change color (multi-color support!) or stroke-width in a consistent way.
+SVG Chameleon creates a ```<symbol>``` sprite out of your SVG files that lets you easily modify colors and stroke-widths via CSS variables. It works with any SVGs, so no need for the designer or the developer to fiddle around with export options or the SVG markup. Thanks to the injected CSS variables, you don't need to worry about the Shadow DOM or specific tags of your SVG, just set your variables somewhere and they will cascade down to your SVG markup.
 
 ## Installation
 
 ``` bash
-# install from T23 git
-npm install -g git+ssh://git@git.team23.de:team23/svg-chameleon.git
+# install from git
+npm i git+https://github.com/christian-reichart/svg-chameleon
+
+# install globally for access over multiple projects
+npm i -g git+https://github.com/christian-reichart/svg-chameleon
 ```
+
+> npm release coming soon...
 
 ## Usage
 
-``` bash
-# Create Chameleon Sprite from folder containing your SVG files
-svg-chameleon /path/to/svg/folder/
-```
-> The provided path is optional and should be relative to your current working directory.
+Create a chameleon sprite from a directory containing your svg files. (the sprite will be generated inside a subdirectory).
 
-> For testing purposes the script defaults to /src/assets/svg/ if no path is provided...
+``` bash
+# If installed locally in your project
+npx svg-chameleon --path=path/to/svg/directory/
+
+# Or if installed globally
+svg-chameleon --path=path/to/svg/directory/
+```
 
 ## TODO
 
-Describe in detail how the sprite can be implemented and styled...
+TODO, please be patient. :)
 
 
