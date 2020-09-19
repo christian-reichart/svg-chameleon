@@ -5,8 +5,6 @@ const svgson = require('svgson');
 const SVGO = require('svgo');
 const SVGSpriter = require ('svg-sprite');
 
-// TODO: Add yargs for CLI arguments
-const ARGS = process.argv.slice(2);
 let fullPath = process.cwd() + '/';
 
 let opts = {
@@ -26,17 +24,22 @@ let opts = {
   transition: 'all .3s ease'
 };
 
+let svgCount = 0;
+let colorChangeCount = 0;
+let strokeWidthChangeCount = 0;
+
 module.exports.create = create;
 
 async function create(customOptions) {
   if(customOptions) {
     applyCustomOptions(customOptions);
+    updateFullPath();
   }
-  updateFullPath();
   // Creating the basic sprite using svg-sprite
   console.log(chalk.grey(`Creating basic sprite inside '${fullPath}${opts.subfolder}/' ...`));
   try {
     await createRegularSprite();
+    console.log(chalk.grey('Basic sprite created.'));
     // After creation, read sprite and inject it with variables
     // Orignal sprite is then overridden
     console.log(chalk.grey('-------------------------------'));
@@ -50,10 +53,18 @@ async function create(customOptions) {
       chalk.hex('#AE5EFF')('adaptable ') +
       chalk.hex('#FF5EDB')('chameleon') +
       chalk.hex('#FF5E84')('...'));
+    console.log(chalk.grey('-------------------------------'));
     await createInjectedSprite();
     // Done!
+    if(colorChangeCount) {
+      console.log(chalk.grey('Injected color variables into ') + chalk.green(colorChangeCount) + chalk.grey(' attributes.'));
+    }
+    if(strokeWidthChangeCount) {
+      console.log(chalk.grey('Injected stroke-width variables into ') + chalk.green(strokeWidthChangeCount) + chalk.grey(' attributes.'));
+    }
+    cleanup();
     console.log(chalk.grey('-------------------------------'));
-    console.log(chalk.green('Task complete!'));
+    console.log(chalk.green.bold('Task complete!'));
   } catch(err) {
     handleError(err);
   }
@@ -89,7 +100,6 @@ async function createRegularSprite() {
   } catch(err) {
     throw err;
   }
-  let svgCount = 0;
   for(const item of svgs) {
     let file;
     let optimizedFile;
@@ -127,7 +137,7 @@ async function createInjectedSprite() {
   let jsonSprite = getSvgJson(`${fullPath}${opts.subfolder}/${opts.name}.svg`);
   let spriteCopy = JSON.parse(JSON.stringify(jsonSprite));
   spriteCopy.children.forEach(symbol => {
-    modifyAttributes(symbol,new Map(),new Map());
+    modifyAttributes(symbol, new Map(), new Map());
   });
   fs.writeFileSync(`${fullPath}${opts.subfolder}/${opts.name}.svg`, svgson.stringify(spriteCopy));
 }
@@ -206,12 +216,14 @@ function variablizeColor(p_color, id) {
   const varStrSpecific = `--${opts.colors.naming}-${id}`;
   const varStrGeneral = `--${opts.colors.naming}`;
   const color = opts.colors.preserveOriginal ? p_color : 'currentColor';
+  colorChangeCount++;
   return `var(${varStrSpecific}, var(${varStrGeneral}, ${color}))`;
 }
 
 function variablizeStrokeWidth(strokeWidth, id) {
   const varStrSpecific = `--${opts.strokeWidths.naming}-${id}`;
   const varStrGeneral = `--${opts.strokeWidths.naming}`;
+  strokeWidthChangeCount++;
   return `var(${varStrSpecific}, var(${varStrGeneral}, ${strokeWidth}))`;
 }
 
@@ -256,4 +268,10 @@ function merge (target, source) {
 function handleError(err) {
   console.error(chalk.redBright(err));
   return;
+}
+
+function cleanup() {
+  svgCount = 0;
+  colorChangeCount = 0;
+  strokeWidthChangeCount = 0;
 }
