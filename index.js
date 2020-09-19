@@ -1,5 +1,3 @@
-#! /usr/bin/env node
-
 const fs = require('fs');
 const path = require('path');
 const chalk = require('chalk');
@@ -9,24 +7,12 @@ const SVGSpriter = require ('svg-sprite');
 
 // TODO: Add yargs for CLI arguments
 const ARGS = process.argv.slice(2);
-const SVG_FOLDER = getFolderPath(ARGS[0]);
-const SVG_SPRITE_SUBFOLDER = 'chameleon-sprite';
-const SVG_SPRITE_NAME = 'chameleon-sprite.svg';
-const SPRITER_CONFIG = {
-  dest: SVG_FOLDER,
-  svg: {
-    xmlDeclaration: false,
-    doctypeDeclaration: false,
-  },
-  mode: {
-    inline: true,
-    symbol: {
-      dest: SVG_SPRITE_SUBFOLDER,
-      sprite: SVG_SPRITE_NAME,
-    }
-  },
-};
-const CHAMELEON_CONFIG = {
+let fullPath = process.cwd() + '/';
+
+let opts = {
+  path: '',
+  subfolder: 'chameleon-sprite',
+  name: 'chameleon-sprite',
   colors: {
     modifiable: true,
     naming: 'svg-custom-color',
@@ -39,67 +25,90 @@ const CHAMELEON_CONFIG = {
   },
   transition: 'all .3s ease'
 };
-// This SVGO configuration converts styles from a <style> tag to inline attributes
-const SVGO_CONFIG = {
-  plugins: [{
-    inlineStyles: {
-      onlyMatchedOnce: false
-    }
-  }]
-}
-const spriter = new SVGSpriter(SPRITER_CONFIG);
-const svgo = new SVGO(SVGO_CONFIG);
-
-(async () => {
-  await create();
-})();
 
 module.exports.create = create;
 
-async function create() {
+async function create(customOptions) {
+  if(customOptions) {
+    applyCustomOptions(customOptions);
+  }
+  updateFullPath();
   // Creating the basic sprite using svg-sprite
-  console.log(chalk.grey(`Creating basic sprite inside ${SVG_FOLDER}${SVG_SPRITE_SUBFOLDER}/...`));
-  await createRegularSprite().catch(handleError);
-  // After creation, read sprite and inject it with variables
-  // Orignal sprite is then overridden
-  console.log(chalk.grey('-------------------------------'));
-  console.log(
-    chalk.hex('#FFBE5E')('Modifing ') +
-    chalk.hex('#FFF25E')('the ') +
-    chalk.hex('#A3FF5E')('sprite ') +
-    chalk.hex('#5EFF8B')('to ') +
-    chalk.hex('#5EF5FF')('become ') +
-    chalk.hex('#6E8EFF')('an ') +
-    chalk.hex('#AE5EFF')('adaptable ') +
-    chalk.hex('#FF5EDB')('chameleon') +
-    chalk.hex('#FF5E84')('...'));
-  await createInjectedSprite().catch(handleError);
-  // Done!
-  console.log(chalk.grey('-------------------------------'));
-  console.log(chalk.green('Task complete!'));
+  console.log(chalk.grey(`Creating basic sprite inside '${fullPath}${opts.subfolder}/' ...`));
+  try {
+    await createRegularSprite();
+    // After creation, read sprite and inject it with variables
+    // Orignal sprite is then overridden
+    console.log(chalk.grey('-------------------------------'));
+    console.log(
+      chalk.hex('#FFBE5E')('Modifing ') +
+      chalk.hex('#FFF25E')('the ') +
+      chalk.hex('#A3FF5E')('sprite ') +
+      chalk.hex('#5EFF8B')('to ') +
+      chalk.hex('#5EF5FF')('become ') +
+      chalk.hex('#6E8EFF')('an ') +
+      chalk.hex('#AE5EFF')('adaptable ') +
+      chalk.hex('#FF5EDB')('chameleon') +
+      chalk.hex('#FF5E84')('...'));
+    await createInjectedSprite();
+    // Done!
+    console.log(chalk.grey('-------------------------------'));
+    console.log(chalk.green('Task complete!'));
+  } catch(err) {
+    handleError(err);
+  }
 }
 
 async function createRegularSprite() {
+  const spriter = new SVGSpriter({
+    dest: fullPath,
+    svg: {
+      xmlDeclaration: false,
+      doctypeDeclaration: false,
+    },
+    mode: {
+      inline: true,
+      symbol: {
+        dest: opts.subfolder,
+        sprite: opts.name + '.svg',
+      }
+    },
+  });
+  // This SVGO configuration converts styles from a <style> tag to inline attributes
+  const svgo = new SVGO({
+    plugins: [{
+      inlineStyles: {
+        onlyMatchedOnce: false
+      }
+    }]
+  });
   let svgs;
   // Add all SVGs to sprite
   try {
-    svgs = fs.readdirSync(SVG_FOLDER);
+    svgs = fs.readdirSync(fullPath);
   } catch(err) {
     throw err;
   }
+  let svgCount = 0;
   for(const item of svgs) {
     let file;
     let optimizedFile;
     if(item.endsWith('.svg')) {
       try {
-        file = fs.readFileSync(SVG_FOLDER + item, { encoding: 'utf-8' });
-        optimizedFile = await svgo.optimize(file, {path: SVG_FOLDER + item});
-        spriter.add(path.resolve(SVG_FOLDER + item), null, optimizedFile.data);
+        file = fs.readFileSync(fullPath + item, { encoding: 'utf-8' });
+        optimizedFile = await svgo.optimize(file, {path: fullPath + item});
+        spriter.add(path.resolve(fullPath + item), null, optimizedFile.data);
+        svgCount++;
       } catch (err) {
         throw err;
       }
     }
   };
+  if(svgCount) {
+    console.log(chalk.grey('Found ') + chalk.green(svgs.length) + chalk.grey(' SVGs.'));
+  } else {
+    throw new Error(`No SVG files found in '${fullPath}'. Make sure you are using the correct path.`)
+  }
   // Compile the sprite
   spriter.compile(function(err, result) {
     if(err) {
@@ -115,18 +124,18 @@ async function createRegularSprite() {
 }
 
 async function createInjectedSprite() {
-  let jsonSprite = getSvgJson(`${SVG_FOLDER}${SVG_SPRITE_SUBFOLDER}/${SVG_SPRITE_NAME}`);
+  let jsonSprite = getSvgJson(`${fullPath}${opts.subfolder}/${opts.name}.svg`);
   let spriteCopy = JSON.parse(JSON.stringify(jsonSprite));
   spriteCopy.children.forEach(symbol => {
     modifyAttributes(symbol,new Map(),new Map());
   });
-  fs.writeFileSync(`${SVG_FOLDER}${SVG_SPRITE_SUBFOLDER}/${SVG_SPRITE_NAME}`, svgson.stringify(spriteCopy));
+  fs.writeFileSync(`${fullPath}${opts.subfolder}/${opts.name}.svg`, svgson.stringify(spriteCopy));
 }
 
 function modifyAttributes(el, registeredColors, registeredStrokeWidths) {
   // TODO: Make Gradients work! (stop-color)
   if(el.attributes && el.name !== 'style'){
-    if(CHAMELEON_CONFIG.colors.modifiable){
+    if(opts.colors.modifiable){
       // FILL
       let fill = el.attributes.fill;
       if(fill && validValue(fill)) {
@@ -155,7 +164,7 @@ function modifyAttributes(el, registeredColors, registeredStrokeWidths) {
       }
     }
     // STROKE-WIDTH
-    if(CHAMELEON_CONFIG.strokeWidths.modifiable) {
+    if(opts.strokeWidths.modifiable) {
       let strokeWidth = el.attributes['stroke-width'];
       if(strokeWidth && validValue(strokeWidth)) {
         if(registeredStrokeWidths.get(strokeWidth)) {
@@ -170,7 +179,7 @@ function modifyAttributes(el, registeredColors, registeredStrokeWidths) {
       }
     }
     // NON SCALING STROKE-WIDTH
-    if(CHAMELEON_CONFIG.strokeWidths.nonScaling && el.attributes['stroke-width']) {
+    if(opts.strokeWidths.nonScaling && el.attributes['stroke-width']) {
       let vectorEffect = el.attributes['vector-effect'];
       if(vectorEffect && !vectorEffect.includes('non-scaling-stroke')) {
         el.attributes['vector-effect'] = vectorEffect + ' non-scaling-stroke';
@@ -180,9 +189,9 @@ function modifyAttributes(el, registeredColors, registeredStrokeWidths) {
     }
 
     // TRANSITION
-    if(CHAMELEON_CONFIG.transition) {
+    if(opts.transition) {
       let style = el.attributes['style'];
-      el.attributes['style'] = style ? `${style} transition: ${CHAMELEON_CONFIG.transition}` : `transition: ${CHAMELEON_CONFIG.transition}`;
+      el.attributes['style'] = style ? `${style} transition: ${opts.transition}` : `transition: ${opts.transition}`;
     }
   }
   // RECURSIVE FOR ALL CHILDREN
@@ -194,15 +203,15 @@ function modifyAttributes(el, registeredColors, registeredStrokeWidths) {
 }
 
 function variablizeColor(p_color, id) {
-  const varStrSpecific = `--${CHAMELEON_CONFIG.colors.naming}-${id}`;
-  const varStrGeneral = `--${CHAMELEON_CONFIG.colors.naming}`;
-  const color = CHAMELEON_CONFIG.colors.preserveOriginal ? p_color : 'currentColor';
+  const varStrSpecific = `--${opts.colors.naming}-${id}`;
+  const varStrGeneral = `--${opts.colors.naming}`;
+  const color = opts.colors.preserveOriginal ? p_color : 'currentColor';
   return `var(${varStrSpecific}, var(${varStrGeneral}, ${color}))`;
 }
 
 function variablizeStrokeWidth(strokeWidth, id) {
-  const varStrSpecific = `--${CHAMELEON_CONFIG.strokeWidths.naming}-${id}`;
-  const varStrGeneral = `--${CHAMELEON_CONFIG.strokeWidths.naming}`;
+  const varStrSpecific = `--${opts.strokeWidths.naming}-${id}`;
+  const varStrGeneral = `--${opts.strokeWidths.naming}`;
   return `var(${varStrSpecific}, var(${varStrGeneral}, ${strokeWidth}))`;
 }
 
@@ -220,16 +229,31 @@ function getSvgJson(path) {
   return svgson.parseSync(file.toString());
 }
 
-function getFolderPath(arg) {
-  const defaultFolder = '/src/assets/svg/';
-  if(!arg) {
-    console.log(chalk.grey(`No SVG folder specified, defaulting to '${defaultFolder}'.`));
-    return process.cwd() + defaultFolder;
-  } else {
-    return arg.endsWith('/') ? process.cwd() + arg : process.cwd() + arg +'/';
+function getFolderPath(path) {
+  return !path || path.endsWith('/') ? path : path +'/';
+}
+
+function updateFullPath() {
+  fullPath = process.cwd() + '/' + opts.path;
+}
+
+function applyCustomOptions(customOptions) {
+  opts = merge(opts, customOptions);
+  opts.path = getFolderPath(opts.path);
+}
+
+// Merge a `source` object to a `target` recursively
+function merge (target, source) {
+  // Iterate through `source` properties and if an `Object` set property to merge of `target` and `source` properties
+  for (const key of Object.keys(source)) {
+    if (source[key] instanceof Object) Object.assign(source[key], merge(target[key], source[key]))
   }
+  // Join `target` and modified `source`
+  Object.assign(target || {}, source)
+  return target
 }
 
 function handleError(err) {
-  console.error(err);
+  console.error(chalk.redBright(err));
+  return;
 }
