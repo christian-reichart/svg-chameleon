@@ -125,11 +125,11 @@ async function createInjectedSprite() {
 
 function modifyAttributes(el, registeredColors, registeredStrokeWidths) {
   // TODO: Make Gradients work! (stop-color)
-  if(el.attributes){
+  if(el.attributes && el.name !== 'style'){
     if(CHAMELEON_CONFIG.colors.modifiable){
       // FILL
       let fill = el.attributes.fill;
-      if(fill && isValidPaint(fill)) {
+      if(fill && containsNoVar(fill)) {
         if(registeredColors.get(fill)) {
           // If fill color has already an assigned variable
           el.attributes.fill = registeredColors.get(fill);
@@ -142,7 +142,7 @@ function modifyAttributes(el, registeredColors, registeredStrokeWidths) {
       }
       // STROKE
       let stroke = el.attributes.stroke;
-      if(stroke && isValidPaint(stroke)) {
+      if(stroke && containsNoVar(stroke)) {
         if(registeredColors.get(stroke)) {
           // If stroke has already an assigned variable
           el.attributes.stroke = registeredColors.get(stroke);
@@ -157,7 +157,7 @@ function modifyAttributes(el, registeredColors, registeredStrokeWidths) {
     // STROKE-WIDTH
     if(CHAMELEON_CONFIG.strokeWidths.modifiable) {
       let strokeWidth = el.attributes['stroke-width'];
-      if(strokeWidth && isValidLength(strokeWidth)) {
+      if(strokeWidth && containsNoVar(strokeWidth)) {
         if(registeredStrokeWidths.get(strokeWidth)) {
           // If stroke-width has already an assigned variable
           el.attributes['stroke-width'] = registeredStrokeWidths.get(strokeWidth);
@@ -206,30 +206,8 @@ function variablizeStrokeWidth(strokeWidth, id) {
   return `var(${varStrSpecific}, var(${varStrGeneral}, ${strokeWidth}))`;
 }
 
-function isValidLength(str) {
-  const trimmedStr = String(str).trim();
-  // Check if CSS length unit
-  if(trimmedStr.match(/(\d*\.?\d+)\s?(px|em|ex|%|in|cn|mm|pt|pc+)?/i)) {
-    return true;
-  }
-  return false;
-}
-
-function isValidPaint(str) {
-  const trimmedStr = String(str).trim();
-  const htmlColorNames = [
-    'black','silver','gray','white','maroon','red','purple','purple','fuchsia',
-    'green','lime','olive','yellow','navy','blue','teal','aqua'
-  ]
-  // Check for Hex or HTML color name
-  if (trimmedStr.match(/^#(?:[0-9a-f]{3}){1,2}$/i) || htmlColorNames.includes(trimmedStr.toLowerCase())) {
-    return true;
-  }
-  // TODO: RGB, RGBA, "transparent", just check if valid Paint Unit...
-  // https://www.w3.org/TR/SVG/painting.html#SpecifyingPaint
-  // Question: allow "none" to be customizable?
-  // Basically just check if not already "var()" is enough??
-  return false;
+function containsNoVar(str) {
+  return !str.includes('var(');
 }
 
 function getSvgJson(path) {
