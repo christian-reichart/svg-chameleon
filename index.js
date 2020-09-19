@@ -36,7 +36,8 @@ const CHAMELEON_CONFIG = {
     modifiable: true,
     naming: 'svg-custom-stroke-width',
     nonScaling: true,
-  }
+  },
+  transition: 'all .3s ease'
 };
 // This SVGO configuration converts styles from a <style> tag to inline attributes
 const SVGO_CONFIG = {
@@ -176,6 +177,12 @@ function modifyAttributes(el, registeredColors, registeredStrokeWidths) {
       } else if(!vectorEffect) {
         el.attributes['vector-effect'] = 'non-scaling-stroke';
       }
+    }
+
+    // TRANSITION
+    if(CHAMELEON_CONFIG.transition) {
+      let style = el.attributes['style'];
+      el.attributes['style'] = style ? `${style} transition: ${CHAMELEON_CONFIG.transition}` : `transition: ${CHAMELEON_CONFIG.transition}`;
     }
   }
   // RECURSIVE FOR ALL CHILDREN
