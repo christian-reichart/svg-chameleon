@@ -129,7 +129,7 @@ function modifyAttributes(el, registeredColors, registeredStrokeWidths) {
     if(CHAMELEON_CONFIG.colors.modifiable){
       // FILL
       let fill = el.attributes.fill;
-      if(fill && containsNoVar(fill)) {
+      if(fill && validValue(fill)) {
         if(registeredColors.get(fill)) {
           // If fill color has already an assigned variable
           el.attributes.fill = registeredColors.get(fill);
@@ -142,7 +142,7 @@ function modifyAttributes(el, registeredColors, registeredStrokeWidths) {
       }
       // STROKE
       let stroke = el.attributes.stroke;
-      if(stroke && containsNoVar(stroke)) {
+      if(stroke && validValue(stroke)) {
         if(registeredColors.get(stroke)) {
           // If stroke has already an assigned variable
           el.attributes.stroke = registeredColors.get(stroke);
@@ -157,7 +157,7 @@ function modifyAttributes(el, registeredColors, registeredStrokeWidths) {
     // STROKE-WIDTH
     if(CHAMELEON_CONFIG.strokeWidths.modifiable) {
       let strokeWidth = el.attributes['stroke-width'];
-      if(strokeWidth && containsNoVar(strokeWidth)) {
+      if(strokeWidth && validValue(strokeWidth)) {
         if(registeredStrokeWidths.get(strokeWidth)) {
           // If stroke-width has already an assigned variable
           el.attributes['stroke-width'] = registeredStrokeWidths.get(strokeWidth);
@@ -206,8 +206,8 @@ function variablizeStrokeWidth(strokeWidth, id) {
   return `var(${varStrSpecific}, var(${varStrGeneral}, ${strokeWidth}))`;
 }
 
-function containsNoVar(str) {
-  return !str.includes('var(');
+function validValue(str) {
+  return !str.includes('var(') && !str.includes('none');
 }
 
 function getSvgJson(path) {
