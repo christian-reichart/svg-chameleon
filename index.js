@@ -12,6 +12,8 @@ let opts = {
   subfolder: 'chameleon-sprite',
   name: 'chameleon-sprite',
   transition: '',
+  css: false,
+  scss: false,
   colors: {
     modifiable: true,
     naming: 'svg-custom-color',
@@ -82,6 +84,10 @@ async function createRegularSprite() {
       symbol: {
         dest: opts.subfolder,
         sprite: opts.name + '.svg',
+        render: {
+          css: opts.css ? { dest: opts.name + '.css' } : false,
+          scss: opts.scss ? { dest: opts.name + '.scss' } : false,
+        }
       }
     },
   });

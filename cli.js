@@ -2,7 +2,7 @@
 
 const chameleon = require('./index.js');
 const { argv } = require('yargs')
-  .boolean(['cl-mod','cl-preserve', 'strk-mod', 'strk-non-scaling']);
+  .boolean(['css', 'scss', 'cl-mod','cl-preserve', 'strk-mod', 'strk-non-scaling']);
 
 const colorOptions = Object.assign({},
   argv.clMod !== undefined && {modifiable: argv.clMod},
@@ -21,6 +21,8 @@ const options = Object.assign({},
   typeof argv.subfolder === 'string' && {subfolder: argv.subfolder},
   typeof argv.name === 'string' && {name: argv.name},
   typeof argv.transition === 'string' && {transition: argv.transition},
+  argv.css !== undefined && {css: argv.css},
+  argv.scss !== undefined && {scss: argv.scss},
   {colors: colorOptions},
   {strokeWidths: strokeWidthOptions},
 );
