@@ -35,6 +35,7 @@ const CHAMELEON_CONFIG = {
   strokeWidths: {
     modifiable: true,
     naming: 'svg-custom-stroke-width',
+    nonScaling: true,
   }
 };
 // This SVGO configuration converts styles from a <style> tag to inline attributes
@@ -56,13 +57,24 @@ module.exports.create = create;
 
 async function create() {
   // Creating the basic sprite using svg-sprite
-  console.log(`Creating basic sprite inside ${SVG_FOLDER}${SVG_SPRITE_SUBFOLDER}/...`);
+  console.log(chalk.grey(`Creating basic sprite inside ${SVG_FOLDER}${SVG_SPRITE_SUBFOLDER}/...`));
   await createRegularSprite().catch(handleError);
   // After creation, read sprite and inject it with variables
   // Orignal sprite is then overridden
-  console.log(`Injecting variables...`);
-  await createInjectableSprite().catch(handleError);
+  console.log(chalk.grey('-------------------------------'));
+  console.log(
+    chalk.hex('#FFBE5E')('Modifing ') +
+    chalk.hex('#FFF25E')('the ') +
+    chalk.hex('#A3FF5E')('sprite ') +
+    chalk.hex('#5EFF8B')('to ') +
+    chalk.hex('#5EF5FF')('become ') +
+    chalk.hex('#6E8EFF')('an ') +
+    chalk.hex('#AE5EFF')('adaptable ') +
+    chalk.hex('#FF5EDB')('chameleon') +
+    chalk.hex('#FF5E84')('...'));
+  await createInjectedSprite().catch(handleError);
   // Done!
+  console.log(chalk.grey('-------------------------------'));
   console.log(chalk.green('Task complete!'));
 }
 
@@ -101,61 +113,68 @@ async function createRegularSprite() {
   });
 }
 
-async function createInjectableSprite() {
+async function createInjectedSprite() {
   let jsonSprite = getSvgJson(`${SVG_FOLDER}${SVG_SPRITE_SUBFOLDER}/${SVG_SPRITE_NAME}`);
-  let modifiedJsonSprite = injectVariables(jsonSprite);
-  fs.writeFileSync(`${SVG_FOLDER}${SVG_SPRITE_SUBFOLDER}/${SVG_SPRITE_NAME}`, svgson.stringify(modifiedJsonSprite));
-}
-
-function injectVariables(jsonSprite) {
   let spriteCopy = JSON.parse(JSON.stringify(jsonSprite));
-
   spriteCopy.children.forEach(symbol => {
     modifyAttributes(symbol,new Map(),new Map());
   });
-  return spriteCopy;
+  fs.writeFileSync(`${SVG_FOLDER}${SVG_SPRITE_SUBFOLDER}/${SVG_SPRITE_NAME}`, svgson.stringify(spriteCopy));
 }
 
 function modifyAttributes(el, registeredColors, registeredStrokeWidths) {
   // TODO: Make Gradients work! (stop-color)
   if(el.attributes){
-    // FILL
-    let fill = el.attributes.fill;
-    if(fill && isValidPaint(fill)) {
-      if(registeredColors.get(fill)) {
-        // If fill color has already an assigned variable
-        el.attributes.fill = registeredColors.get(fill);
-      } else {
-        // If fill is a new color (gets registered)
-        let varFill = variablizeColor(fill, registeredColors.size + 1);
-        registeredColors.set(fill, varFill);
-        el.attributes.fill = varFill;
+    if(CHAMELEON_CONFIG.colors.modifiable){
+      // FILL
+      let fill = el.attributes.fill;
+      if(fill && isValidPaint(fill)) {
+        if(registeredColors.get(fill)) {
+          // If fill color has already an assigned variable
+          el.attributes.fill = registeredColors.get(fill);
+        } else {
+          // If fill is a new color (gets registered)
+          let varFill = variablizeColor(fill, registeredColors.size + 1);
+          registeredColors.set(fill, varFill);
+          el.attributes.fill = varFill;
+        }
       }
-    }
-    // STROKE
-    let stroke = el.attributes.stroke;
-    if(stroke && isValidPaint(stroke)) {
-      if(registeredColors.get(stroke)) {
-        // If stroke has already an assigned variable
-        el.attributes.stroke = registeredColors.get(stroke);
-      } else {
-        // If color is a new color (gets registered)
-        let varStroke = variablizeColor(stroke, registeredColors.size + 1);
-        registeredColors.set(stroke, varStroke);
-        el.attributes.stroke = varStroke;
+      // STROKE
+      let stroke = el.attributes.stroke;
+      if(stroke && isValidPaint(stroke)) {
+        if(registeredColors.get(stroke)) {
+          // If stroke has already an assigned variable
+          el.attributes.stroke = registeredColors.get(stroke);
+        } else {
+          // If color is a new color (gets registered)
+          let varStroke = variablizeColor(stroke, registeredColors.size + 1);
+          registeredColors.set(stroke, varStroke);
+          el.attributes.stroke = varStroke;
+        }
       }
     }
     // STROKE-WIDTH
-    let strokeWidth = el.attributes['stroke-width'];
-    if(strokeWidth && isValidLength(strokeWidth)) {
-      if(registeredStrokeWidths.get(strokeWidth)) {
-        // If stroke-width has already an assigned variable
-        el.attributes['stroke-width'] = registeredStrokeWidths.get(strokeWidth);
-      } else {
-        // If stroke-width is a new stroke-width (gets registered)
-        let varStrokeWidth = variablizeStrokeWidth(strokeWidth, registeredStrokeWidths.size + 1);
-        registeredStrokeWidths.set(strokeWidth, varStrokeWidth);
-        el.attributes['stroke-width'] = varStrokeWidth;
+    if(CHAMELEON_CONFIG.strokeWidths.modifiable) {
+      let strokeWidth = el.attributes['stroke-width'];
+      if(strokeWidth && isValidLength(strokeWidth)) {
+        if(registeredStrokeWidths.get(strokeWidth)) {
+          // If stroke-width has already an assigned variable
+          el.attributes['stroke-width'] = registeredStrokeWidths.get(strokeWidth);
+        } else {
+          // If stroke-width is a new stroke-width (gets registered)
+          let varStrokeWidth = variablizeStrokeWidth(strokeWidth, registeredStrokeWidths.size + 1);
+          registeredStrokeWidths.set(strokeWidth, varStrokeWidth);
+          el.attributes['stroke-width'] = varStrokeWidth;
+        }
+      }
+    }
+    // NON SCALING STROKE-WIDTH
+    if(CHAMELEON_CONFIG.strokeWidths.nonScaling && el.attributes['stroke-width']) {
+      let vectorEffect = el.attributes['vector-effect'];
+      if(vectorEffect && !vectorEffect.includes('non-scaling-stroke')) {
+        el.attributes['vector-effect'] = vectorEffect + ' non-scaling-stroke';
+      } else if(!vectorEffect) {
+        el.attributes['vector-effect'] = 'non-scaling-stroke';
       }
     }
   }
@@ -219,7 +238,7 @@ function getSvgJson(path) {
 function getFolderPath(arg) {
   const defaultFolder = '/src/assets/svg/';
   if(!arg) {
-    console.log(chalk.yellow(`No SVG folder specified, defaulting to '${defaultFolder}'.`));
+    console.log(chalk.grey(`No SVG folder specified, defaulting to '${defaultFolder}'.`));
     return process.cwd() + defaultFolder;
   } else {
     return arg.endsWith('/') ? process.cwd() + arg : process.cwd() + arg +'/';
