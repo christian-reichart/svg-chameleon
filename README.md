@@ -128,7 +128,7 @@ chameleon.create({
 |--|--|--|
 | `--path` | `--path=path/to/svg/directory/` | path |
 | `--subdir-name` | `--subdir-name=my-sprite-dir` | subdirName |
-| `--file-name` | `--subdir-name=my-sprite` | fileName |
+| `--file-name` | `--file-name=my-sprite` | fileName |
 | `--css` | `--css=true` | css |
 | `--scss` | `--scss=true` | scss |
 | `--c-apply` | `--c-apply=false` | colors.apply |
