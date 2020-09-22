@@ -108,7 +108,7 @@ chameleon.create({
   strokeWidths: {
     apply: false,                           // default: true
     name: 'my-stroke-width-var-naming',     // default: 'svg-custom-stroke-width' (individual stroke-widths are named 'svg-custom-stroke-width-1' and so on)
-    noScaling: true,                        // default: false
+    noScaling: true,                        // default: false (if true, preserves the stroke-width when scaling the SVG)
     customVars: {
       '1': 'stroke-thin',                   // this would result in --stroke-thin for every stroke-width with '1'
       '3.5': 'stroke-bold'
