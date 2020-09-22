@@ -42,9 +42,9 @@ Just set these variables globally (if you want to affect all SVGs) or scoped (on
 }
 ```
 
-Provided you wrap the SVG with a ```<div class="circle-wrapper>```, the CSS above would result in the circle having a blue fill (general color for this SVG), a red outline (specific color overriding the original green and the general blue) and a stroke-width of 4 (the original value since no variable was specified).
+Provided you wrap the SVG with a ```<div class="circle-wrapper>```, the CSS above would result in the circle having a blue fill (general color for this SVG), a red outline (specific color overriding the original green and the general blue) and a stroke-width of 4 (the original value since no variable was specified). You can also set transitions on the SVG for smooth animations (when you want to do hover effects for example). See options below.
 
-You can also set transitions on the SVG for smooth animations (when you want to do hover effects for example). See options below.
+> Note: The specific namings (like ```--svg-custom-color-1```) are scoped to each SVG, meaning color-1 on one SVG doesn't necessarily have to be color-1 on another SVG. If you want consistent variables for specific colors, you can set custom vars in the options.
 
 ## Installation
 
@@ -101,7 +101,7 @@ chameleon.create({
     name: 'my-color-var-naming',            // default: 'svg-custom-color' (individual colors are named 'svg-custom-color-1' and so on)
     preserveOriginal: true,                 // default: false (if true, replaces original color with 'currentColor')
     customVars: {
-      '#D8D8D8': 'color-grey',              // this would result in var(--color-grey) for every color attribute with '#D8D8D8'
+      '#D8D8D8': 'color-grey',              // this would result in --color-grey for every color attribute with '#D8D8D8'
       '#A3FF5E': 'color-primary'
     }
   },
@@ -110,7 +110,7 @@ chameleon.create({
     name: 'my-stroke-width-var-naming',     // default: 'svg-custom-stroke-width' (individual stroke-widths are named 'svg-custom-stroke-width-1' and so on)
     noScaling: true,                        // default: false
     customVars: {
-      '1': 'stroke-thin',                   // this would result in var(--stroke-thin) for every stroke-width with '1'
+      '1': 'stroke-thin',                   // this would result in --stroke-thin for every stroke-width with '1'
       '3.5': 'stroke-bold'
     }
   },
