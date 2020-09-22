@@ -9,26 +9,31 @@ let fullPath = process.cwd() + '/';
 
 let opts = {
   path: '',
-  subfolder: 'chameleon-sprite',
-  name: 'chameleon-sprite',
-  transition: '',
+  subdirName: 'chameleon-sprite',
+  fileName: 'chameleon-sprite',
   css: false,
   scss: false,
   colors: {
-    modifiable: true,
-    naming: 'svg-custom-color',
+    apply: true,
+    name: 'svg-custom-color',
     preserveOriginal: true,
   },
   strokeWidths: {
-    modifiable: true,
-    naming: 'svg-custom-stroke-width',
+    apply: true,
+    name: 'svg-custom-stroke-width',
     nonScaling: false,
+  },
+  transition: {
+    apply: false,
+    name: 'svg-custom-transition',
+    default: null,
   },
 };
 
 let svgCount = 0;
 let colorChangeCount = 0;
 let strokeWidthChangeCount = 0;
+let transitionApplyCount = 0;
 
 module.exports.create = create;
 
@@ -38,7 +43,7 @@ async function create(customOptions) {
     updateFullPath();
   }
   // Creating the basic sprite using svg-sprite
-  console.log(chalk.grey(`Creating basic sprite inside '${fullPath}${opts.subfolder}/' ...`));
+  console.log(chalk.grey(`Creating basic sprite inside '${fullPath}${opts.subdirName}/' ...`));
   try {
     await createRegularSprite();
     console.log(chalk.grey('Basic sprite created.'));
@@ -58,11 +63,44 @@ async function create(customOptions) {
     console.log(chalk.grey('-------------------------------'));
     await createInjectedSprite();
     // Done!
-    if(colorChangeCount) {
-      console.log(chalk.grey('Injected color variables into ') + chalk.green(colorChangeCount) + chalk.grey(' attributes.'));
+    if(opts.colors.apply) {
+      if(colorChangeCount > 0) {
+        console.log(
+          chalk.green(colorChangeCount) +
+          chalk.grey(' color var injections into attributes.')
+        );
+      } else {
+        console.log(
+          chalk.yellow(colorChangeCount) +
+          chalk.grey(' color vars were injected.')
+        );
+      }
     }
-    if(strokeWidthChangeCount) {
-      console.log(chalk.grey('Injected stroke-width variables into ') + chalk.green(strokeWidthChangeCount) + chalk.grey(' attributes.'));
+    if(opts.strokeWidths.apply) {
+      if(strokeWidthChangeCount > 0) {
+        console.log(
+          chalk.green(strokeWidthChangeCount) +
+          chalk.grey(' stroke-width var injections into attributes.')
+        );
+        } else {
+          console.log(
+            chalk.yellow(strokeWidthChangeCount) +
+            chalk.grey(' stroke-width vars were injected.')
+          );
+      }
+    }
+    if(opts.transition.apply) {
+      if(transitionApplyCount > 0) {
+        console.log(
+          chalk.green(transitionApplyCount) +
+          chalk.grey(' transition injections into tags.')
+        );
+      } else {
+        console.log(
+          chalk.yellow(transitionApplyCount) +
+          chalk.grey(' transitions were applied.')
+        );
+      }
     }
     cleanup();
     console.log(chalk.grey('-------------------------------'));
@@ -82,11 +120,11 @@ async function createRegularSprite() {
     mode: {
       inline: true,
       symbol: {
-        dest: opts.subfolder,
-        sprite: opts.name + '.svg',
+        dest: opts.subdirName,
+        sprite: opts.fileName + '.svg',
         render: {
-          css: opts.css ? { dest: opts.name + '.css' } : false,
-          scss: opts.scss ? { dest: opts.name + '.scss' } : false,
+          css: opts.css ? { dest: opts.fileName + '.css' } : false,
+          scss: opts.scss ? { dest: opts.fileName + '.scss' } : false,
         }
       }
     },
@@ -121,7 +159,7 @@ async function createRegularSprite() {
     }
   };
   if(svgCount) {
-    console.log(chalk.grey('Found ') + chalk.green(svgs.length) + chalk.grey(' SVGs.'));
+    console.log(chalk.green(svgs.length) + chalk.grey(' SVGs found.'));
   } else {
     throw new Error(`No SVG files found in '${fullPath}'. Make sure you are using the correct path.`)
   }
@@ -140,18 +178,18 @@ async function createRegularSprite() {
 }
 
 async function createInjectedSprite() {
-  let jsonSprite = getSvgJson(`${fullPath}${opts.subfolder}/${opts.name}.svg`);
+  let jsonSprite = getSvgJson(`${fullPath}${opts.subdirName}/${opts.fileName}.svg`);
   let spriteCopy = JSON.parse(JSON.stringify(jsonSprite));
   spriteCopy.children.forEach(symbol => {
     modifyAttributes(symbol, new Map(), new Map());
   });
-  fs.writeFileSync(`${fullPath}${opts.subfolder}/${opts.name}.svg`, svgson.stringify(spriteCopy));
+  fs.writeFileSync(`${fullPath}${opts.subdirName}/${opts.fileName}.svg`, svgson.stringify(spriteCopy));
 }
 
 function modifyAttributes(el, registeredColors, registeredStrokeWidths) {
   // TODO: Make Gradients work! (stop-color)
   if(el.attributes && el.name !== 'style'){
-    if(opts.colors.modifiable){
+    if(opts.colors.apply){
       // FILL
       let fill = el.attributes.fill;
       if(fill && validValue(fill)) {
@@ -164,6 +202,7 @@ function modifyAttributes(el, registeredColors, registeredStrokeWidths) {
           registeredColors.set(fill, varFill);
           el.attributes.fill = varFill;
         }
+        colorChangeCount++;
       }
       // STROKE
       let stroke = el.attributes.stroke;
@@ -177,10 +216,11 @@ function modifyAttributes(el, registeredColors, registeredStrokeWidths) {
           registeredColors.set(stroke, varStroke);
           el.attributes.stroke = varStroke;
         }
+        colorChangeCount++;
       }
     }
     // STROKE-WIDTH
-    if(opts.strokeWidths.modifiable) {
+    if(opts.strokeWidths.apply) {
       let strokeWidth = el.attributes['stroke-width'];
       if(strokeWidth && validValue(strokeWidth)) {
         if(registeredStrokeWidths.get(strokeWidth)) {
@@ -192,6 +232,7 @@ function modifyAttributes(el, registeredColors, registeredStrokeWidths) {
           registeredStrokeWidths.set(strokeWidth, varStrokeWidth);
           el.attributes['stroke-width'] = varStrokeWidth;
         }
+        strokeWidthChangeCount++;
       }
     }
     // NON SCALING STROKE-WIDTH
@@ -205,9 +246,13 @@ function modifyAttributes(el, registeredColors, registeredStrokeWidths) {
     }
 
     // TRANSITION
-    if(opts.transition) {
-      let style = el.attributes['style'];
-      el.attributes['style'] = style ? `${style} transition: ${opts.transition}` : `transition: ${opts.transition}`;
+    if(opts.transition.apply) {
+      // only apply transition to elements that actually need it
+      if(el.attributes.fill || el.attributes.stroke || el.attributes['stroke-width'] || el.attributes['stop-color']) {
+        let style = variablizeTransitionStyle(el.attributes.style);
+        el.attributes.style = style;
+        transitionApplyCount++;
+      }
     }
   }
   // RECURSIVE FOR ALL CHILDREN
@@ -219,18 +264,22 @@ function modifyAttributes(el, registeredColors, registeredStrokeWidths) {
 }
 
 function variablizeColor(p_color, id) {
-  const varStrSpecific = `--${opts.colors.naming}-${id}`;
-  const varStrGeneral = `--${opts.colors.naming}`;
+  const varStrSpecific = `--${opts.colors.name}-${id}`;
+  const varStrGeneral = `--${opts.colors.name}`;
   const color = opts.colors.preserveOriginal ? p_color : 'currentColor';
-  colorChangeCount++;
   return `var(${varStrSpecific}, var(${varStrGeneral}, ${color}))`;
 }
 
 function variablizeStrokeWidth(strokeWidth, id) {
-  const varStrSpecific = `--${opts.strokeWidths.naming}-${id}`;
-  const varStrGeneral = `--${opts.strokeWidths.naming}`;
-  strokeWidthChangeCount++;
+  const varStrSpecific = `--${opts.strokeWidths.name}-${id}`;
+  const varStrGeneral = `--${opts.strokeWidths.name}`;
   return `var(${varStrSpecific}, var(${varStrGeneral}, ${strokeWidth}))`;
+}
+
+function variablizeTransitionStyle(style) {
+  const varStr = `--${opts.transition.name}`;
+  const completeStr = opts.transition.default ? `var(${varStr}, ${opts.transition.default})` : `var(${varStr})`;
+  return style ? `${style} transition: ${completeStr};` : `transition: ${completeStr};`;
 }
 
 function validValue(str) {
@@ -280,4 +329,5 @@ function cleanup() {
   svgCount = 0;
   colorChangeCount = 0;
   strokeWidthChangeCount = 0;
+  transitionApplyCount = 0;
 }

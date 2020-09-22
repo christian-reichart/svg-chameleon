@@ -2,29 +2,35 @@
 
 const chameleon = require('./index.js');
 const { argv } = require('yargs')
-  .boolean(['css', 'scss', 'cl-mod','cl-preserve', 'strk-mod', 'strk-non-scaling']);
+  .boolean(['css', 'scss', 'c-apply','c-preserve', 'sw-apply', 'sw-non-scaling', 't-apply']);
 
 const colorOptions = Object.assign({},
-  argv.clMod !== undefined && {modifiable: argv.clMod},
-  typeof argv.clNaming === 'string' && {naming: argv.clNaming},
-  argv.clPreserve !== undefined && {preserveOriginal: argv.clPreserve},
+  argv.cApply !== undefined && {apply: argv.cApply},
+  typeof argv.cName === 'string' && {name: argv.cName},
+  argv.cPreserve !== undefined && {preserveOriginal: argv.cPreserve},
 );
 
 const strokeWidthOptions = Object.assign({},
-  argv.strkMod !== undefined && {modifiable: argv.strkMod},
-  typeof argv.strkNaming === 'string' && {naming: argv.strkNaming},
-  argv.strkNonScaling !== undefined && {nonScaling: argv.strkNonScaling},
+  argv.swApply !== undefined && {apply: argv.swApply},
+  typeof argv.swName === 'string' && {name: argv.swName},
+  argv.swNonScaling !== undefined && {nonScaling: argv.swNonScaling},
+);
+
+const transitionOptions = Object.assign({},
+  argv.tApply !== undefined && {apply: argv.tApply},
+  typeof argv.tName === 'string' && {name: argv.tName},
+  typeof argv.tDefault === 'string' && {default: argv.tDefault},
 );
 
 const options = Object.assign({},
   typeof argv.path === 'string' && {path: argv.path},
-  typeof argv.subfolder === 'string' && {subfolder: argv.subfolder},
-  typeof argv.name === 'string' && {name: argv.name},
-  typeof argv.transition === 'string' && {transition: argv.transition},
+  typeof argv.subdirName === 'string' && {subdirName: argv.subdirName},
+  typeof argv.fileName === 'string' && {fileName: argv.fileName},
   argv.css !== undefined && {css: argv.css},
   argv.scss !== undefined && {scss: argv.scss},
   {colors: colorOptions},
   {strokeWidths: strokeWidthOptions},
+  {transition: transitionOptions},
 );
 
 (async () => {
