@@ -99,7 +99,7 @@ chameleon.create({
   colors: {
     apply: false,                           // default: true
     name: 'my-color-var-naming',            // default: 'svg-custom-color' (individual colors are named 'svg-custom-color-1' and so on)
-    preserveOriginal: true,                 // default: false (if true, replaces original color with 'currentColor')
+    preserveOriginal: false,                // default: true (if false, replaces original color with 'currentColor')
     customVars: {
       '#D8D8D8': 'color-grey',              // this would result in --color-grey for every color attribute with '#D8D8D8'
       '#A3FF5E': 'color-primary'
