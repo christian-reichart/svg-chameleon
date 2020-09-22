@@ -8,12 +8,14 @@ const colorOptions = Object.assign({},
   argv.cApply !== undefined && {apply: argv.cApply},
   typeof argv.cName === 'string' && {name: argv.cName},
   argv.cPreserve !== undefined && {preserveOriginal: argv.cPreserve},
+  typeof argv.cCustomVars === 'string' && {customVars: parseCustomVarsToObject(argv.cCustomVars)}
 );
 
 const strokeWidthOptions = Object.assign({},
   argv.swApply !== undefined && {apply: argv.swApply},
   typeof argv.swName === 'string' && {name: argv.swName},
   argv.swNonScaling !== undefined && {nonScaling: argv.swNonScaling},
+  typeof argv.swCustomVars === 'string' && {customVars: parseCustomVarsToObject(argv.swCustomVars)}
 );
 
 const transitionOptions = Object.assign({},
@@ -36,3 +38,17 @@ const options = Object.assign({},
 (async () => {
   await chameleon.create(options);
 })();
+
+function parseCustomVarsToObject(str) {
+  let obj = {};
+  let splits = str.split(',');
+  splits.forEach(pair => {
+    let pairSplits = pair.split(':');
+    if(pairSplits.length !== 2) {
+      throw new Error("Couldn't parse format for custom vars! Please use <to-replace>:<custom-var-name>.");
+    }
+    obj[pairSplits[0]] = pairSplits[1];
+  });
+
+  return obj;
+}
