@@ -25,8 +25,8 @@ would be converted to:
 ```html
 <symbol viewBox="0 0 100 100" id="circle-1">
   <circle cx="50" cy="50" r="40"
-    fill="var(--svg-custom-color-2, var(--svg-custom-color, yellow))"
-    stroke="var(--svg-custom-color-1, var(--svg-custom-color, green))"
+    fill="var(--svg-custom-color-1, var(--svg-custom-color, yellow))"
+    stroke="var(--svg-custom-color-2, var(--svg-custom-color, green))"
     stroke-width="var(--svg-custom-stroke-width-1, var(--svg-custom-stroke-width, 4))"
   />
 </symbol>
@@ -38,7 +38,7 @@ Just set these variables globally (if you want to affect all SVGs) or scoped (on
 ```css
 .circle-wrapper {
   --svg-custom-color: blue;
-  --svg-custom-color-1: red;
+  --svg-custom-color-2: red;
 }
 ```
 
