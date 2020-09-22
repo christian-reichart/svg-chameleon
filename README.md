@@ -4,7 +4,47 @@ SVG Chameleon creates a ```<symbol>``` sprite out of your SVG files that lets yo
 
 ## How it works
 
-> TODO
+SVG Chameleon does two things:
+
+It creates a SVG symbol sprite using [svg-sprite](https://www.npmjs.com/package/svg-sprite).
+
+It injects CSS variables into the SVG code. For example, this following SVG symbol:
+
+```html
+<symbol viewBox="0 0 100 100" id="circle-1">
+  <circle cx="50" cy="50" r="40"
+    fill="yellow"
+    stroke="green"
+    stroke-width="4"
+  />
+</symbol>
+```
+
+would be converted to:
+
+```html
+<symbol viewBox="0 0 100 100" id="circle-1">
+  <circle cx="50" cy="50" r="40"
+    fill="var(--svg-custom-color-2, var(--svg-custom-color, yellow))"
+    stroke="var(--svg-custom-color-1, var(--svg-custom-color, green))"
+    stroke-width="var(--svg-custom-stroke-width-1, var(--svg-custom-stroke-width, 4))"
+  />
+</symbol>
+```
+
+You can now just set these variables in your CSS and it will affect the SVG, even though it is in the shadow-DOM (because it's implemented via ```<use>```).
+Just set these variables globally (if you want to affect all SVGs) or scoped (on a wrapper class for example) if you want to affect only certain SVGs.
+
+```css
+.circle-wrapper {
+  --svg-custom-color: blue;
+  --svg-custom-color-1: red;
+}
+```
+
+Provided you wrap the SVG with a ```<div class="circle-wrapper>```, the CSS above would result in the circle having a blue fill (general color for this SVG), a red outline (specific color overriding the original green and the general blue) and a stroke-width of 4 (the original value since no variable was specified).
+
+You can also set transitions on the SVG for smooth animations (when you want to do hover effects for example). See options below.
 
 ## Installation
 
@@ -50,7 +90,7 @@ The creation of the chameleon sprite can be customized with various options.
 ### Options as JS object
 
 ```javascript
-await chameleon.create({
+chameleon.create({
   path: 'path/to/svg/directory/',           // default: '' (current working directory)  
   subdirName: 'my-sprite-dir',              // default: 'chameleon-sprite' (created inside your SVG directory, stores all generated files)
   fileName: 'my-sprite',                    // default: 'chameleon-sprite' (used for .svg, .scss and .css files)
