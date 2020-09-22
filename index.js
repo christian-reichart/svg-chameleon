@@ -248,7 +248,7 @@ function modifyAttributes(el, registeredColors, registeredStrokeWidths) {
     // TRANSITION
     if(opts.transition.apply) {
       // only apply transition to elements that actually need it
-      if(el.attributes.fill || el.attributes.stroke || el.attributes['stroke-width'] || el.attributes['stop-color']) {
+      if(el.attributes.fill || el.attributes.stroke || el.attributes['stroke-width']) {
         let style = variablizeTransitionStyle(el.attributes.style);
         el.attributes.style = style;
         transitionApplyCount++;
@@ -283,7 +283,10 @@ function variablizeTransitionStyle(style) {
 }
 
 function validValue(str) {
-  return !str.includes('var(') && !str.includes('none');
+  // not already var(
+  // not url() (used in gradients with defs - gradients don't really work atm anyway)
+  // not none
+  return !str.includes('var(') && !str.includes('url(') && !str.includes('none');
 }
 
 function getSvgJson(path) {
