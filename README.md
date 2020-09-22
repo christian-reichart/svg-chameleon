@@ -5,29 +5,60 @@ SVG Chameleon creates a ```<symbol>``` sprite out of your SVG files that lets yo
 ## Installation
 
 ``` bash
-# install from git
+# install locally to your project from git
 npm i git+https://github.com/christian-reichart/svg-chameleon
 
-# install globally for access over multiple projects
-npm i -g git+https://github.com/christian-reichart/svg-chameleon
+# Alternative: install globally for CLI usage in multiple projects
+npm i git+https://github.com/christian-reichart/svg-chameleon -g
 ```
 
 > npm release coming soon...
 
-## Usage
+## How it works
 
-Create a chameleon sprite from a directory containing your svg files. (the sprite will be generated inside a subdirectory).
+> TODO
+
+## Command Line Usage
 
 ``` bash
-# If installed locally in your project
+# Local usage
 npx svg-chameleon --path=path/to/svg/directory/
 
-# Or if installed globally
+# Global usage
 svg-chameleon --path=path/to/svg/directory/
 ```
 
-## TODO
+## Usage in Code
 
-TODO, please be patient. :)
+> TODO
+
+## Options
+
+The creation of the chameleon sprite can be customized with various options.
+
+### Options as JS object
+
+> TODO options object with commentary
+
+### Command line options
+
+| option |  example | corresponding options property |
+|--|--|--|
+| `--path` | `--path=assets/svg/` | path |
+| `--subdir-name` | `--subdir-name=my-sprite-dir` | subdirName |
+| `--file-name` | `--subdir-name=my-sprite` | fileName |
+| `--css` | `--css=true` | css |
+| `--scss` | `--scss=true` | scss |
+| `--c-apply` | `--c-apply=false` | colors.apply |
+| `--c-name` | `--c-name=my-color-var-naming` | colors.name |
+| `--c-preserve` | `--c-preserve=false` | colors.preserveOriginal |
+| `--c-custom-vars` | `--c-custom-vars=#D8D8D8:color-grey,#A3FF5E:color-secondary` | colors.customVars |
+| `--sw-apply` | `--sw-apply=false` | strokeWidths.apply |
+| `--sw-name` | `--sw-name=my-stroke-width-var-naming` | strokeWidths.name |
+| `--sw-no-scaling` | `--sw-no-scaling=true` | strokeWidths.noScaling |
+| `--sw-custom-vars` | `--sw-custom-vars=1:stroke-thin,3.5:stroke-bold` | strokeWidths.customVars |
+| `--t-apply` | `--t-apply=true` | transition.apply |
+| `--t-name` | `--t-name=my-transition-var-name` | transition.name |
+| `--t-default` | `--t-default='all .3s'` | transition.default |
 
 
