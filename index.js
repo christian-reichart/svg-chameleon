@@ -129,12 +129,24 @@ async function createRegularSprite() {
       }
     },
   });
-  // This SVGO configuration converts styles from a <style> tag to inline attributes
-  const svgo = new SVGO({
+
+  /* Apperently, converting styles and removing style tag at the same time with SVGO doesn't seem to work.
+   * Right now, I just optimize 2 times with different options.
+   * Holzhammermethode! :D
+   */
+
+   //This SVGO configuration converts styles from a <style> tag to inline attributes
+  const svgoConvertStyles = new SVGO({
     plugins: [{
       inlineStyles: {
         onlyMatchedOnce: false
-      }
+      },
+    }]
+  });
+  // This SVGO configuration removes all style tags.
+  const svgoRemoveStyles = new SVGO({
+    plugins: [{
+      removeStyleElement: true,
     }]
   });
   let svgs;
@@ -150,7 +162,8 @@ async function createRegularSprite() {
     if(item.endsWith('.svg')) {
       try {
         file = fs.readFileSync(fullPath + item, { encoding: 'utf-8' });
-        optimizedFile = await svgo.optimize(file, {path: fullPath + item});
+        styleConvertedFile = await svgoConvertStyles.optimize(file, {path: fullPath + item});
+        optimizedFile = await svgoRemoveStyles.optimize(styleConvertedFile.data);
         spriter.add(path.resolve(fullPath + item), null, optimizedFile.data);
         svgCount++;
       } catch (err) {
