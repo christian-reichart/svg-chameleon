@@ -32,8 +32,8 @@ would be converted to:
 </symbol>
 ```
 
-You can now just set these variables in your CSS and it will affect the SVG, even though it is in the shadow-DOM (because it's implemented via ```<use>```).
-Just set these variables globally (if you want to affect all SVGs) or scoped (on a wrapper class for example) if you want to affect only certain SVGs.
+You can now just set these variables in your CSS and it will affect the SVG, even though it is in the shadow-DOM.
+Just set these variables globally or scoped for specific SVGs.
 
 ```css
 .circle-wrapper {
@@ -42,7 +42,7 @@ Just set these variables globally (if you want to affect all SVGs) or scoped (on
 }
 ```
 
-Provided you wrap the SVG with a ```<div class="circle-wrapper>```, the CSS above would result in the circle having a blue fill (general color for this SVG), a red outline (specific color overriding the original green and the general blue) and a stroke-width of 4 (the original value since no variable was specified). You can also set transitions on the SVG for smooth animations (when you want to do hover effects for example). See options below.
+Provided you wrap the SVG with a ```<div class="circle-wrapper>```, the CSS above would result in the circle having a blue fill (general color for this SVG), a red outline (specific color overriding the original green and the general blue) and a stroke-width of 4 (the original value since no variable was specified). You can also set transitions on the SVG for smooth animations. See options below.
 
 > Note: The specific namings (like ```--svg-custom-color-1```) are scoped to each SVG, meaning color-1 on one SVG doesn't necessarily have to be color-1 on another SVG. If you want consistent variables for specific colors, you can set custom vars in the options.
 
