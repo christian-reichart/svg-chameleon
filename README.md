@@ -117,7 +117,7 @@ chameleon.create({
   transition: {
     apply: true,                            // default: false
     name: 'my-transition-var-name',         // default: svg-custom-transition
-    default: 'all .3s'                      // fallback, if no transition variable is assigned in your CSS
+    default: 'all .3s'                      // default: null (fallback, if no transition variable is assigned in your CSS)
   }
 });
 ```
