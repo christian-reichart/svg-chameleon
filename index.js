@@ -166,7 +166,6 @@ async function createRegularSprite() {
           console.log(chalk.yellow(`Skipping ${item}, because the file is empty...`));
           continue;
         }
-        console.log('does stuff... with item', item);
         styleConvertedFile = await svgoConvertStyles.optimize(file, {path: fullPath + item});
         optimizedFile = await svgoRemoveStyles.optimize(styleConvertedFile.data);
         spriter.add(path.resolve(fullPath + item), null, optimizedFile.data);
