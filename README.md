@@ -25,9 +25,9 @@ would be converted to:
 ```html
 <symbol viewBox="0 0 100 100" id="circle-1">
   <circle cx="50" cy="50" r="40"
-    fill="var(--svg-custom-color-1, var(--svg-custom-color, yellow))"
-    stroke="var(--svg-custom-color-2, var(--svg-custom-color, green))"
-    stroke-width="var(--svg-custom-stroke-width-1, var(--svg-custom-stroke-width, 4))"
+    fill="var(--svg-custom-color, yellow)"
+    stroke="var(--svg-custom-color-2, green)"
+    stroke-width="var(--svg-custom-stroke-width, 4)"
   />
 </symbol>
 ```
@@ -42,9 +42,9 @@ Just set these variables globally or scoped for specific SVGs.
 }
 ```
 
-Provided you wrap the SVG with a ```<div class="circle-wrapper>```, the CSS above would result in the circle having a blue fill (general color for this SVG), a red outline (specific color overriding the original green and the general blue) and a stroke-width of 4 (the original value since no variable was specified). You can also set transitions on the SVG for smooth animations. See options below.
+Provided you wrap the SVG with a ```<div class="circle-wrapper>```, the CSS above would result in the circle having a blue fill, a red outline and a stroke-width of 4 (original value, since no variable was specified). You can also set transitions on the SVG for smooth animations. See options below.
 
-> Note: The specific namings (like ```--svg-custom-color-1```) are scoped to each SVG, meaning color-1 on one SVG doesn't necessarily have to be color-1 on another SVG. If you want consistent variables for specific colors, you can set custom vars in the options.
+> Note: The specific namings (like ```--svg-custom-color``` and ```--svg-custom-color-2```) are scoped to each SVG, meaning the original value of ```--svg-custom-color``` on one SVG doesn't necessarily have to be the same on another SVG. If you want consistent variables for specific colors, you can set custom vars in the options.
 
 ## Installation
 
@@ -91,14 +91,14 @@ The creation of the chameleon sprite can be customized with various options.
 
 ```javascript
 chameleon.create({
-  path: 'path/to/svg/directory/',           // default: '' (current working directory)  
+  path: 'path/to/svg/directory/',           // default: '' (current working directory)
   subdirName: 'my-sprite-dir',              // default: 'chameleon-sprite' (created inside your SVG directory, stores all generated files)
   fileName: 'my-sprite',                    // default: 'chameleon-sprite' (used for .svg, .scss and .css files)
   scss: true,                               // default: false (creates scss with classes for dimensions)
   css: true,                                // default: false (creates css with classes for dimensions)
   colors: {
     apply: false,                           // default: true
-    name: 'my-color-var-naming',            // default: 'svg-custom-color' (individual colors are named 'svg-custom-color-1' and so on)
+    name: 'my-color-var-naming',            // default: 'svg-custom-color' (additional colors are named 'svg-custom-color-2' and so on)
     preserveOriginal: false,                // default: true (if false, replaces original color with 'currentColor')
     customVars: {
       '#D8D8D8': 'color-grey',              // this would result in --color-grey for every color attribute with '#D8D8D8'
@@ -107,7 +107,7 @@ chameleon.create({
   },
   strokeWidths: {
     apply: false,                           // default: true
-    name: 'my-stroke-width-var-naming',     // default: 'svg-custom-stroke-width' (individual stroke-widths are named 'svg-custom-stroke-width-1' and so on)
+    name: 'my-stroke-width-var-naming',     // default: 'svg-custom-stroke-width' (additional stroke-widths are named 'svg-custom-stroke-width-2' and so on)
     noScaling: true,                        // default: false (if true, preserves the stroke-width when scaling the SVG)
     customVars: {
       '1': 'stroke-thin',                   // this would result in --stroke-thin for every stroke-width with '1'

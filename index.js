@@ -281,22 +281,20 @@ function modifyAttributes(el, registeredColors, registeredStrokeWidths) {
 }
 
 function variablizeColor(p_color, id) {
-  const varStrSpecific = `--${opts.colors.name}-${id}`;
-  const varStrGeneral = `--${opts.colors.name}`;
+  const varStr = id === 1 ? `--${opts.colors.name}` : `--${opts.colors.name}-${id}`;
   const color = opts.colors.preserveOriginal ? p_color : 'currentColor';
   if(opts.colors.customVars && opts.colors.customVars[p_color]) {
-    return `var(--${opts.colors.customVars[p_color]}, var(${varStrSpecific}, var(${varStrGeneral}, ${color}))`
+    return `var(--${opts.colors.customVars[p_color]}, var(${varStr}, ${color}))`
   }
-  return `var(${varStrSpecific}, var(${varStrGeneral}, ${color}))`;
+  return `var(${varStr}, ${color})`;
 }
 
 function variablizeStrokeWidth(strokeWidth, id) {
-  const varStrSpecific = `--${opts.strokeWidths.name}-${id}`;
-  const varStrGeneral = `--${opts.strokeWidths.name}`;
+  const varStr = id === 1 ? `--${opts.strokeWidths.name}` : `--${opts.strokeWidths.name}-${id}`;
   if(opts.strokeWidths.customVars && opts.strokeWidths.customVars[strokeWidth]) {
-    return `var(--${opts.strokeWidths.customVars[strokeWidth]}, var(${varStrSpecific}, var(${varStrGeneral}, ${strokeWidth}))`
+    return `var(--${opts.strokeWidths.customVars[strokeWidth]}, var(${varStr}, ${strokeWidth}))`
   }
-  return `var(${varStrSpecific}, var(${varStrGeneral}, ${strokeWidth}))`;
+  return `var(${varStr}, ${strokeWidth})`;
 }
 
 function variablizeTransitionStyle(style) {
