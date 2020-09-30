@@ -51,7 +51,7 @@ async function create(customOptions) {
     // Orignal sprite is then overridden
     console.log(chalk.grey('-------------------------------'));
     console.log(
-      chalk.hex('#FFBE5E')('Modifing ') +
+      chalk.hex('#FFBE5E')('Modifying ') +
       chalk.hex('#FFF25E')('the ') +
       chalk.hex('#A3FF5E')('sprite ') +
       chalk.hex('#5EFF8B')('to ') +
