@@ -329,7 +329,10 @@ function updateFullPath() {
 }
 
 function applyCustomOptions(customOptions) {
-  opts = merge(opts, customOptions);
+  if(customOptions.transition && customOptions.transition.name || customOptions.transition && customOptions.transition.default) {
+    opts.transition.apply = true;
+  }
+  merge(opts, customOptions);
   opts.path = getFolderPath(opts.path);
 }
 
