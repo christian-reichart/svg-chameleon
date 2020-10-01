@@ -108,7 +108,7 @@ chameleon.create({
   strokeWidths: {
     apply: false,                           // default: true
     name: 'my-stroke-width-var-naming',     // default: 'svg-custom-stroke-width' (additional stroke-widths are named 'svg-custom-stroke-width-2' and so on)
-    noScaling: true,                        // default: false (if true, preserves the stroke-width when scaling the SVG)
+    nonScaling: true,                        // default: false (if true, preserves the stroke-width when scaling the SVG)
     customVars: {
       '1': 'stroke-thin',                   // this would result in --stroke-thin for every stroke-width with '1'
       '3.5': 'stroke-bold'
@@ -137,7 +137,7 @@ chameleon.create({
 | `--c-custom-vars` | `--c-custom-vars=#D8D8D8:color-grey,#A3FF5E:color-primary` | colors.customVars |
 | `--sw-apply` | `--sw-apply=false` | strokeWidths.apply |
 | `--sw-name` | `--sw-name=my-stroke-width-var-naming` | strokeWidths.name |
-| `--sw-no-scaling` | `--sw-no-scaling=true` | strokeWidths.noScaling |
+| `--sw-non-scaling` | `--sw-non-scaling=true` | strokeWidths.noScaling |
 | `--sw-custom-vars` | `--sw-custom-vars=1:stroke-thin,3.5:stroke-bold` | strokeWidths.customVars |
 | `--t-apply` | `--t-apply=true` | transition.apply |
 | `--t-name` | `--t-name=my-transition-var-name` | transition.name |
