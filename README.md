@@ -129,17 +129,17 @@ chameleon.create({
 | `--path` | `--path=path/to/svg/directory/` | path |
 | `--subdir-name` | `--subdir-name=my-sprite-dir` | subdirName |
 | `--file-name` | `--file-name=my-sprite` | fileName |
-| `--css` | `--css=true` | css |
-| `--scss` | `--scss=true` | scss |
+| `--css` | `--css` | css |
+| `--scss` | `--scss` | scss |
 | `--c-apply` | `--c-apply=false` | colors.apply |
 | `--c-name` | `--c-name=my-color-var-naming` | colors.name |
 | `--c-preserve` | `--c-preserve=false` | colors.preserveOriginal |
-| `--c-custom-vars` | `--c-custom-vars=#D8D8D8:color-grey,#A3FF5E:color-primary` | colors.customVars |
+| `--c-custom-vars` | `--c-custom-vars='#D8D8D8:color-grey,#A3FF5E:color-primary'` | colors.customVars |
 | `--sw-apply` | `--sw-apply=false` | strokeWidths.apply |
 | `--sw-name` | `--sw-name=my-stroke-width-var-naming` | strokeWidths.name |
-| `--sw-non-scaling` | `--sw-non-scaling=true` | strokeWidths.noScaling |
-| `--sw-custom-vars` | `--sw-custom-vars=1:stroke-thin,3.5:stroke-bold` | strokeWidths.customVars |
-| `--t-apply` | `--t-apply=true` | transition.apply |
+| `--sw-non-scaling` | `--sw-non-scaling` | strokeWidths.noScaling |
+| `--sw-custom-vars` | `--sw-custom-vars='1:stroke-thin,3.5:stroke-bold'` | strokeWidths.customVars |
+| `--t-apply` | `--t-apply` | transition.apply |
 | `--t-name` | `--t-name=my-transition-var-name` | transition.name |
 | `--t-default` | `--t-default='all .3s'` | transition.default |
 
