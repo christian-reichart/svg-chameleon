@@ -2,19 +2,17 @@
 
 const chameleon = require('./index.js');
 const chalk = require('chalk');
-const { argv } = require('yargs')
-  .boolean(['css', 'scss', 'c-apply','c-preserve', 'sw-apply', 'sw-non-scaling', 't-apply']);
 
+const { argv } = require('yargs')
+  .boolean(['css', 'scss', 'c-apply', 'c-preserve', 'sw-apply', 'sw-non-scaling', 't-apply']);
 
 (async () => {
-  let opts;
   try {
-    opts = getOptionsAsObject();
+    const opts = getOptionsAsObject();
+    await chameleon.create(opts);
   } catch(err) {
     console.error(chalk.redBright(err));
-    return;
   }
-  await chameleon.create(opts);
 })();
 
 function getOptionsAsObject() {
