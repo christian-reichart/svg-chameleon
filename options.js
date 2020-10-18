@@ -1,8 +1,13 @@
 const findUp = require('find-up');
-const { join } = require('path');
+const { getAbsolutePath } = require('./util');
 
-const configFiles = ['chameleon.js', 'chameleon.json'];
-const defaultOptions = {
+const configFileNames = ['chameleon.config.js', 'chameleon.config.json'];
+
+/**
+ * Get default options
+ * Return a new instance to prevent possible mutabillity issues
+ */
+const getDefaultOptions = () => ({
   path: '',
   subdirName: 'chameleon-sprite',
   fileName: 'chameleon-sprite',
@@ -23,29 +28,31 @@ const defaultOptions = {
     name: 'svg-custom-transition',
     default: null,
   },
-};
+});
 
-
-async function getOptions() {
-  const options = await getOptionsFromFile();
-  const path = join(process.cwd(), options.path);
-
-  return { ...options, path };
+/**
+ * Get config path 
+ * 
+ * @param { string | undefined } path 
+ */
+const getConfigPath = async (path) => {
+  return path !== undefined ? getAbsolutePath(path) : await findUp(configFileNames)
 }
 
-
-async function getOptionsFromFile() {
-  const path = await findUp(configFiles);
-
-  if (path === undefined) {
-    return defaultOptions;
-  }
+/**
+ * Get options from config file
+ * 
+ * @param { string | undefined } path 
+ */
+const getOptionsFromConfigFile = async (path) => {
+  const configPath = await getConfigPath(path);
 
   try {
-    return require(path);
+    return configPath !== undefined ? require(configPath) : {};
   } catch (error) {
     throw new Error(`Could not load config file from ${path}`);
   }
 }
 
-module.exports = getOptions;
+exports.getDefaultOptions = getDefaultOptions;
+exports.getOptionsFromConfigFile = getOptionsFromConfigFile;

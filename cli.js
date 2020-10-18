@@ -3,17 +3,28 @@
 const chameleon = require('./index.js');
 const chalk = require('chalk');
 
+const { getOptionsFromConfigFile } = require('./options');
+const { deepMerge } = require('./util');
+
 const { argv } = require('yargs')
   .boolean(['css', 'scss', 'c-apply', 'c-preserve', 'sw-apply', 'sw-non-scaling', 't-apply']);
 
 (async () => {
   try {
-    const opts = getOptionsAsObject();
-    await chameleon.create(opts);
+    const configPath = getConfigPath(argv);
+    const configOptions = await getOptionsFromConfigFile(configPath);
+    const cliOptions = getOptionsAsObject();
+    const options = deepMerge(configOptions, cliOptions);
+
+    await chameleon.create(options);
   } catch(err) {
     console.error(chalk.redBright(err));
   }
 })();
+
+function getConfigPath({ config }) {
+  return typeof config === 'string' ? config : undefined;
+}
 
 function getOptionsAsObject() {
   const colorOptions = Object.assign({},

@@ -1,11 +1,13 @@
 const fs = require('fs');
 const { join, dirname, resolve } = require('path');
+
 const chalk = require('chalk');
 const svgson = require('svgson');
 const SVGO = require('svgo');
 const SVGSpriter = require('svg-sprite');
 
-const getOptions = require("./options");
+const { getAbsolutePath, deepMerge } = require('./util');
+const { getDefaultOptions } = require('./options');
 
 let opts;
 let fullPath;
@@ -16,14 +18,9 @@ let transitionApplyCount = 0;
 
 module.exports.create = create;
 
-async function create(customOptions) {
-  opts = await getOptions();
-  fullPath = opts.path;
-
-  if (customOptions) {
-    applyCustomOptions(customOptions);
-    updateFullPath();
-  }
+async function create(customOptions = {}) {
+  opts = applyCustomOptions(customOptions);
+  fullPath = getAbsolutePath(opts.path);
 
   // Creating the basic sprite using svg-sprite
   console.log(chalk.grey(`Creating basic sprite inside '${join(fullPath, opts.subdirName)}' ...`));
@@ -309,26 +306,11 @@ function getSvgJson(path) {
   return svgson.parseSync(file.toString());
 }
 
-function updateFullPath() {
-  fullPath = join(process.cwd(), opts.path);
-}
-
 function applyCustomOptions(customOptions) {
   if (customOptions.transition && customOptions.transition.name || customOptions.transition && customOptions.transition.default) {
-    opts.transition.apply = true;
+    customOptions.transition.apply = true;
   }
-  merge(opts, customOptions);
-}
-
-// Merge a `source` object to a `target` recursively
-function merge(target, source) {
-  // Iterate through `source` properties and if an `Object` set property to merge of `target` and `source` properties
-  for (const key of Object.keys(source)) {
-    if (source[key] instanceof Object) Object.assign(source[key], merge(target[key], source[key]))
-  }
-  // Join `target` and modified `source`
-  Object.assign(target || {}, source)
-  return target
+  return deepMerge(getDefaultOptions(), customOptions);
 }
 
 function handleError(err) {
