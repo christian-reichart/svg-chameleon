@@ -1,13 +1,16 @@
-const fs = require('fs');
-const path = require('path');
-const chalk = require('chalk');
-const svgson = require('svgson');
-const SVGO = require('svgo');
-const SVGSpriter = require ('svg-sprite');
+import { ChameleonOptions, TransitionOptions } from './lib/interfaces';
+import { PlainObjectType } from './lib/types';
+
+import * as fs from 'fs';
+import * as path from 'path';
+import * as chalk from 'chalk';
+import * as svgson from 'svgson';
+import SVGO from 'svgo';
+import sprite from 'svg-sprite';
 
 let fullPath = process.cwd() + '/';
 
-let opts = {
+const opts: ChameleonOptions = {
   path: '',
   subdirName: 'chameleon-sprite',
   fileName: 'chameleon-sprite',
@@ -35,9 +38,7 @@ let colorChangeCount = 0;
 let strokeWidthChangeCount = 0;
 let transitionApplyCount = 0;
 
-module.exports.create = create;
-
-async function create(customOptions) {
+export const create = async (customOptions: ChameleonOptions): Promise<void> => {
   if(customOptions) {
     applyCustomOptions(customOptions);
     updateFullPath();
@@ -110,8 +111,8 @@ async function create(customOptions) {
   }
 }
 
-async function createRegularSprite() {
-  const spriter = new SVGSpriter({
+async function createRegularSprite(): Promise<void> {
+  const spriter = new sprite({
     dest: fullPath,
     svg: {
       xmlDeclaration: false,
@@ -166,27 +167,31 @@ async function createRegularSprite() {
           console.log(chalk.yellow(`Skipping ${item}, because the file is empty...`));
           continue;
         }
-        styleConvertedFile = await svgoConvertStyles.optimize(file, {path: fullPath + item});
+        const styleConvertedFile = await svgoConvertStyles.optimize(file, {path: fullPath + item});
         optimizedFile = await svgoRemoveStyles.optimize(styleConvertedFile.data);
-        spriter.add(path.resolve(fullPath + item), null, optimizedFile.data);
+        spriter.add(path.resolve(fullPath + item), '', optimizedFile.data);
         svgCount++;
       } catch (err) {
         throw err;
       }
     }
-  };
+  }
+
   if(svgCount) {
     console.log(chalk.green(svgs.length) + chalk.grey(' SVGs found.'));
   } else {
     throw new Error(`No SVG files found in '${fullPath}'. Make sure you are using the correct path.`)
   }
   // Compile the sprite
-  spriter.compile(function(err, result) {
+  spriter.compile(function(err: Error, result: Array<PlainObjectType>): void {
     if(err) {
       throw err;
     }
-    for (var mode in result) {
-        for (var resource in result[mode]) {
+
+    console.log('RESULT: ', result);
+
+    for (let mode in result) {
+        for (let resource in result[mode]) {
             fs.mkdirSync(path.dirname(result[mode][resource].path), { recursive: true });
             fs.writeFileSync(result[mode][resource].path, result[mode][resource].contents);
         }
@@ -194,16 +199,16 @@ async function createRegularSprite() {
   });
 }
 
-async function createInjectedSprite() {
-  let jsonSprite = getSvgJson(`${fullPath}${opts.subdirName}/${opts.fileName}.svg`);
-  let spriteCopy = JSON.parse(JSON.stringify(jsonSprite));
-  spriteCopy.children.forEach(symbol => {
+async function createInjectedSprite(): Promise<void> {
+  const jsonSprite = getSvgJson(`${fullPath}${opts.subdirName}/${opts.fileName}.svg`);
+  const spriteCopy = JSON.parse(JSON.stringify(jsonSprite));
+  spriteCopy.children.forEach((symbol: any) => {
     modifyAttributes(symbol, new Map(), new Map());
   });
   fs.writeFileSync(`${fullPath}${opts.subdirName}/${opts.fileName}.svg`, svgson.stringify(spriteCopy));
 }
 
-function modifyAttributes(el, registeredColors, registeredStrokeWidths) {
+function modifyAttributes(el: any, registeredColors: Map<string, string>, registeredStrokeWidths: Map<string, string>) {
   // TODO: Make Gradients work! (stop-color)
   if(el.attributes && el.name !== 'style'){
     if(opts.colors.apply){
@@ -266,7 +271,7 @@ function modifyAttributes(el, registeredColors, registeredStrokeWidths) {
     if(opts.transition.apply) {
       // only apply transition to elements that actually need it
       if(el.attributes.fill || el.attributes.stroke || el.attributes['stroke-width']) {
-        let style = variablizeTransitionStyle(el.attributes.style);
+        const style = variablizeTransitionStyle(el.attributes.style);
         el.attributes.style = style;
         transitionApplyCount++;
       }
@@ -274,13 +279,13 @@ function modifyAttributes(el, registeredColors, registeredStrokeWidths) {
   }
   // RECURSIVE FOR ALL CHILDREN
   if(el.children.length) {
-    el.children.forEach(child => {
+    el.children.forEach((child: HTMLOrSVGElement) => {
       modifyAttributes(child, registeredColors, registeredStrokeWidths);
     });
   }
 }
 
-function variablizeColor(p_color, id) {
+function variablizeColor(p_color: string, id: number): string {
   const varStr = id === 1 ? `--${opts.colors.name}` : `--${opts.colors.name}-${id}`;
   const color = opts.colors.preserveOriginal ? p_color : 'currentColor';
   if(opts.colors.customVars && opts.colors.customVars[p_color]) {
@@ -289,7 +294,7 @@ function variablizeColor(p_color, id) {
   return `var(${varStr}, ${color})`;
 }
 
-function variablizeStrokeWidth(strokeWidth, id) {
+function variablizeStrokeWidth(strokeWidth: string, id: number): string {
   const varStr = id === 1 ? `--${opts.strokeWidths.name}` : `--${opts.strokeWidths.name}-${id}`;
   if(opts.strokeWidths.customVars && opts.strokeWidths.customVars[strokeWidth]) {
     return `var(--${opts.strokeWidths.customVars[strokeWidth]}, var(${varStr}, ${strokeWidth}))`
@@ -297,38 +302,37 @@ function variablizeStrokeWidth(strokeWidth, id) {
   return `var(${varStr}, ${strokeWidth})`;
 }
 
-function variablizeTransitionStyle(style) {
+function variablizeTransitionStyle(style: TransitionOptions) {
   const varStr = `--${opts.transition.name}`;
   const completeStr = opts.transition.default ? `var(${varStr}, ${opts.transition.default})` : `var(${varStr})`;
   return style ? `${style} transition: ${completeStr};` : `transition: ${completeStr};`;
 }
 
-function validValue(str) {
+function validValue(str: string): boolean {
   // not already var(
   // not url() (used in gradients with defs - gradients don't really work atm anyway)
   // not none
   return !str.includes('var(') && !str.includes('url(') && !str.includes('none');
 }
 
-function getSvgJson(path) {
-  let file;
+function getSvgJson(path: string): PlainObjectType | undefined {
   try {
-    file = fs.readFileSync(path);
+    const file = fs.readFileSync(path);
+    return svgson.parseSync(file.toString());
   } catch (err) {
     console.error(err);
   }
-  return svgson.parseSync(file.toString());
 }
 
-function getFolderPath(path) {
+function getFolderPath(path: string): string {
   return !path || path.endsWith('/') ? path : path +'/';
 }
 
-function updateFullPath() {
+function updateFullPath(): void {
   fullPath = process.cwd() + '/' + opts.path;
 }
 
-function applyCustomOptions(customOptions) {
+function applyCustomOptions(customOptions: ChameleonOptions): void {
   if(customOptions.transition && customOptions.transition.name || customOptions.transition && customOptions.transition.default) {
     opts.transition.apply = true;
   }
@@ -337,7 +341,7 @@ function applyCustomOptions(customOptions) {
 }
 
 // Merge a `source` object to a `target` recursively
-function merge (target, source) {
+function merge (target: PlainObjectType, source: PlainObjectType): PlainObjectType {
   // Iterate through `source` properties and if an `Object` set property to merge of `target` and `source` properties
   for (const key of Object.keys(source)) {
     if (source[key] instanceof Object) Object.assign(source[key], merge(target[key], source[key]))
@@ -347,12 +351,12 @@ function merge (target, source) {
   return target
 }
 
-function handleError(err) {
+function handleError(err: Error): void {
   console.error(chalk.redBright(err));
   return;
 }
 
-function cleanup() {
+function cleanup(): void {
   svgCount = 0;
   colorChangeCount = 0;
   strokeWidthChangeCount = 0;

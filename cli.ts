@@ -1,5 +1,8 @@
 #! /usr/bin/env node
 
+import { PlainObjectType } from './lib/types';
+import { ChameleonOptions } from './lib/interfaces';
+
 const chameleon = require('./index.js');
 const chalk = require('chalk');
 const { argv } = require('yargs')
@@ -17,7 +20,7 @@ const { argv } = require('yargs')
   await chameleon.create(opts);
 })();
 
-function getOptionsAsObject() {
+function getOptionsAsObject(): ChameleonOptions {
   const colorOptions = Object.assign({},
     argv.cApply !== undefined && {apply: argv.cApply},
     typeof argv.cName === 'string' && {name: argv.cName},
@@ -38,7 +41,7 @@ function getOptionsAsObject() {
     typeof argv.tDefault === 'string' && {default: argv.tDefault},
   );
 
-  const options = Object.assign({},
+  return Object.assign({},
     typeof argv.path === 'string' && {path: argv.path},
     typeof argv.subdirName === 'string' && {subdirName: argv.subdirName},
     typeof argv.fileName === 'string' && {fileName: argv.fileName},
@@ -48,11 +51,11 @@ function getOptionsAsObject() {
     {strokeWidths: strokeWidthOptions},
     {transition: transitionOptions},
   );
-  return options;
 }
 
-function getCustomVarsAsObject(str) {
-  let obj = {};
+// @Todo add typing for ',' strings
+function getCustomVarsAsObject(str: string): PlainObjectType {
+  let obj: PlainObjectType = {};
   let splits = str.split(',');
   splits.forEach(pair => {
     let pairSplits = pair.split(':');
