@@ -122,10 +122,19 @@ chameleon.create({
 });
 ```
 
+### Options as JS or JSON config file
+
+The above Javascript options can be persisted as either JS or a JSON configuration files. The files must be named chameleon.config.js or chameleon.config.json.
+
+The tool automatically searches for configuration files in the directory where it was started and by going up in parent directories.
+
+Alternatively a `--config' flag with a path to the configuration file can be passed to the cli.
+
 ### Command line options
 
 | option |  example | corresponding options property |
 |--|--|--|
+| `--config` | `--config=path/to/chameleon.config.js` |  |
 | `--path` | `--path=path/to/svg/directory/` | path |
 | `--subdir-name` | `--subdir-name=my-sprite-dir` | subdirName |
 | `--file-name` | `--file-name=my-sprite` | fileName |
