@@ -128,7 +128,7 @@ The above Javascript options can be persisted as either JS or a JSON configurati
 
 The tool automatically searches for configuration files in the directory where it was started and by going up in parent directories.
 
-Alternatively a `--config' flag with a path to the configuration file can be passed to the cli.
+Alternatively a `--config` flag with a path to the configuration file can be passed to the cli.
 
 ### Command line options
 
