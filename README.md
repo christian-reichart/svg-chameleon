@@ -50,16 +50,13 @@ Provided you wrap the SVG with a ```<div class="circle-wrapper>```, the CSS abov
 
 ``` bash
 # install locally to your project from git
-npm i git+https://github.com/christian-reichart/svg-chameleon
+npm i svg-chameleon
 ```
 
 ``` bash
 # Alternative: install globally for CLI usage in multiple projects
-npm i git+https://github.com/christian-reichart/svg-chameleon -g
+npm i svg-chameleon -g
 ```
-
-> npm release coming soon...
-
 
 ## Usage in Code
 
