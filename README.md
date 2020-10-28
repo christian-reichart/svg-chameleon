@@ -49,7 +49,7 @@ Provided you wrap the SVG with a ```<div class="circle-wrapper>```, the CSS abov
 ## Installation
 
 ``` bash
-# install locally to your project from git
+# install locally to your project with npm
 npm i svg-chameleon
 ```
 
