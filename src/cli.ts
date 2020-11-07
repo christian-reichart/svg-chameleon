@@ -2,12 +2,12 @@
 
 import { PlainObjectType } from './lib/types';
 import { ChameleonOptions } from './lib/interfaces';
-
 const chameleon = require('./index.js');
-const chalk = require('chalk');
-const { argv } = require('yargs')
-  .boolean(['css', 'scss', 'c-apply','c-preserve', 'sw-apply', 'sw-non-scaling', 't-apply']);
+import chalk from 'chalk';
+import yargs from 'yargs';
 
+const argv = yargs
+  .boolean(['css', 'scss', 'c-apply','c-preserve', 'sw-apply', 'sw-non-scaling', 't-apply']);
 
 (async () => {
   let opts;

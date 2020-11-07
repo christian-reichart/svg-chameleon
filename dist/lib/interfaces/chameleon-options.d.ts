@@ -1,10 +1,8 @@
 import { PlainObjectType } from '../types';
-
 export interface BaseOptions {
     apply: boolean;
     name: string;
 }
-
 export interface StrokeWidthOptions extends BaseOptions {
     nonScaling: boolean;
     customVars?: PlainObjectType;
@@ -13,11 +11,9 @@ export interface ColorOptions extends BaseOptions {
     preserveOriginal: boolean;
     customVars?: PlainObjectType;
 }
-
 export interface TransitionOptions extends BaseOptions {
     default: null;
 }
-
 export interface ChameleonOptions {
     path: string;
     subdirName: string;
@@ -28,4 +24,3 @@ export interface ChameleonOptions {
     strokeWidths: StrokeWidthOptions;
     transition: TransitionOptions;
 }
-
