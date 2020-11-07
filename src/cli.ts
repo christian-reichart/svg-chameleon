@@ -2,12 +2,9 @@
 
 import { PlainObjectType } from './lib/types';
 import { ChameleonOptions } from './lib/interfaces';
-const chameleon = require('./index.js');
+import * as chameleon  from './';
 import chalk from 'chalk';
 import yargs from 'yargs';
-
-const argv = yargs
-  .boolean(['css', 'scss', 'c-apply','c-preserve', 'sw-apply', 'sw-non-scaling', 't-apply']);
 
 (async () => {
   let opts;
@@ -21,6 +18,8 @@ const argv = yargs
 })();
 
 function getOptionsAsObject(): ChameleonOptions {
+  const argv: any = yargs
+      .boolean(['css', 'scss', 'cApply','cPreserve', 'swApply', 'swNonScaling', 'tApply']);
   const colorOptions = Object.assign({},
     argv.cApply !== undefined && {apply: argv.cApply},
     typeof argv.cName === 'string' && {name: argv.cName},

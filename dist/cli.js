@@ -8,11 +8,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-const chameleon = require('./index.js');
+import * as chameleon from './';
 import chalk from 'chalk';
 import yargs from 'yargs';
-const argv = yargs.argv
-    .boolean(['css', 'scss', 'c-apply', 'c-preserve', 'sw-apply', 'sw-non-scaling', 't-apply']);
 (() => __awaiter(void 0, void 0, void 0, function* () {
     let opts;
     try {
@@ -25,6 +23,8 @@ const argv = yargs.argv
     yield chameleon.create(opts);
 }))();
 function getOptionsAsObject() {
+    const argv = yargs
+        .boolean(['css', 'scss', 'cApply', 'cPreserve', 'swApply', 'swNonScaling', 'tApply']);
     const colorOptions = Object.assign({}, argv.cApply !== undefined && { apply: argv.cApply }, typeof argv.cName === 'string' && { name: argv.cName }, argv.cPreserve !== undefined && { preserveOriginal: argv.cPreserve }, typeof argv.cCustomVars === 'string' && { customVars: getCustomVarsAsObject(argv.cCustomVars) });
     const strokeWidthOptions = Object.assign({}, argv.swApply !== undefined && { apply: argv.swApply }, typeof argv.swName === 'string' && { name: argv.swName }, argv.swNonScaling !== undefined && { nonScaling: argv.swNonScaling }, typeof argv.swCustomVars === 'string' && { customVars: getCustomVarsAsObject(argv.swCustomVars) });
     const transitionOptions = Object.assign({}, argv.tApply !== undefined && { apply: argv.tApply }, typeof argv.tName === 'string' && { name: argv.tName }, typeof argv.tDefault === 'string' && { default: argv.tDefault });

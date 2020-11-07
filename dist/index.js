@@ -9,8 +9,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 import * as fs from 'fs';
 import * as path from 'path';
-import * as chalk from 'chalk';
-import * as svgson from 'svgson';
+import chalk from 'chalk';
+import svgson from 'svgson';
 import SVGO from 'svgo';
 import sprite from 'svg-sprite';
 let fullPath = process.cwd() + '/';
@@ -180,7 +180,8 @@ function createRegularSprite() {
             if (err) {
                 throw err;
             }
-            console.log('RESULT: ', result);
+            // @Todo(Chris): check if this is ever used
+            // this has no effect as far as i can see
             for (let mode in result) {
                 for (let resource in result[mode]) {
                     fs.mkdirSync(path.dirname(result[mode][resource].path), { recursive: true });
@@ -193,11 +194,12 @@ function createRegularSprite() {
 function createInjectedSprite() {
     return __awaiter(this, void 0, void 0, function* () {
         const jsonSprite = getSvgJson(`${fullPath}${opts.subdirName}/${opts.fileName}.svg`);
-        const spriteCopy = JSON.parse(JSON.stringify(jsonSprite));
-        spriteCopy.children.forEach((symbol) => {
+        // Unnecessary as far as i can tell
+        // const spriteCopy = JSON.parse(JSON.stringify(jsonSprite));
+        jsonSprite.children.forEach((symbol) => {
             modifyAttributes(symbol, new Map(), new Map());
         });
-        fs.writeFileSync(`${fullPath}${opts.subdirName}/${opts.fileName}.svg`, svgson.stringify(spriteCopy));
+        fs.writeFileSync(`${fullPath}${opts.subdirName}/${opts.fileName}.svg`, svgson.stringify(jsonSprite));
     });
 }
 function modifyAttributes(el, registeredColors, registeredStrokeWidths) {
@@ -209,7 +211,7 @@ function modifyAttributes(el, registeredColors, registeredStrokeWidths) {
             if (fill && validValue(fill)) {
                 if (registeredColors.get(fill)) {
                     // If fill color has already an assigned variable
-                    el.attributes.fill = registeredColors.get(fill);
+                    el.attributes.fill = registeredColors.get(fill) || '';
                 }
                 else {
                     // If fill is a new color (gets registered)
@@ -224,7 +226,7 @@ function modifyAttributes(el, registeredColors, registeredStrokeWidths) {
             if (stroke && validValue(stroke)) {
                 if (registeredColors.get(stroke)) {
                     // If stroke has already an assigned variable
-                    el.attributes.stroke = registeredColors.get(stroke);
+                    el.attributes.stroke = registeredColors.get(stroke) || '';
                 }
                 else {
                     // If color is a new color (gets registered)
@@ -241,7 +243,7 @@ function modifyAttributes(el, registeredColors, registeredStrokeWidths) {
             if (strokeWidth && validValue(strokeWidth)) {
                 if (registeredStrokeWidths.get(strokeWidth)) {
                     // If stroke-width has already an assigned variable
-                    el.attributes['stroke-width'] = registeredStrokeWidths.get(strokeWidth);
+                    el.attributes['stroke-width'] = registeredStrokeWidths.get(strokeWidth) || '';
                 }
                 else {
                     // If stroke-width is a new stroke-width (gets registered)
@@ -266,8 +268,7 @@ function modifyAttributes(el, registeredColors, registeredStrokeWidths) {
         if (opts.transition.apply) {
             // only apply transition to elements that actually need it
             if (el.attributes.fill || el.attributes.stroke || el.attributes['stroke-width']) {
-                const style = variablizeTransitionStyle(el.attributes.style);
-                el.attributes.style = style;
+                el.attributes.style = variablizeTransitionStyle(el.attributes.style);
                 transitionApplyCount++;
             }
         }

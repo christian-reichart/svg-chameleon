@@ -3,17 +3,17 @@ export interface BaseOptions {
     apply: boolean;
     name: string;
 }
-export interface StrokeWidthOptions extends BaseOptions {
+export declare type StrokeWidthOptions = BaseOptions & {
     nonScaling: boolean;
     customVars?: PlainObjectType;
-}
-export interface ColorOptions extends BaseOptions {
+};
+export declare type ColorOptions = BaseOptions & {
     preserveOriginal: boolean;
     customVars?: PlainObjectType;
-}
-export interface TransitionOptions extends BaseOptions {
+};
+export declare type TransitionOptions = BaseOptions & {
     default: null;
-}
+};
 export interface ChameleonOptions {
     path: string;
     subdirName: string;

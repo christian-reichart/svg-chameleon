@@ -1,12 +1,13 @@
-import { ChameleonOptions, TransitionOptions } from './lib/interfaces';
+import { ChameleonOptions } from './lib/interfaces';
 import { PlainObjectType } from './lib/types';
 
 import * as fs from 'fs';
 import * as path from 'path';
-import * as chalk from 'chalk';
-import * as svgson from 'svgson';
+import chalk from 'chalk';
+import svgson from 'svgson';
 import SVGO from 'svgo';
 import sprite from 'svg-sprite';
+import { INode } from 'svgson';
 
 let fullPath = process.cwd() + '/';
 
@@ -160,6 +161,7 @@ async function createRegularSprite(): Promise<void> {
   for(const item of svgs) {
     let file;
     let optimizedFile;
+
     if(item.endsWith('.svg')) {
       try {
         file = fs.readFileSync(fullPath + item, { encoding: 'utf-8' });
@@ -184,12 +186,11 @@ async function createRegularSprite(): Promise<void> {
   }
   // Compile the sprite
   spriter.compile(function(err: Error, result: Array<PlainObjectType>): void {
-    if(err) {
+    if (err) {
       throw err;
     }
-
-    console.log('RESULT: ', result);
-
+    // @Todo(Chris): check if this is ever used
+    // this has no effect as far as i can see
     for (let mode in result) {
         for (let resource in result[mode]) {
             fs.mkdirSync(path.dirname(result[mode][resource].path), { recursive: true });
@@ -200,24 +201,26 @@ async function createRegularSprite(): Promise<void> {
 }
 
 async function createInjectedSprite(): Promise<void> {
-  const jsonSprite = getSvgJson(`${fullPath}${opts.subdirName}/${opts.fileName}.svg`);
-  const spriteCopy = JSON.parse(JSON.stringify(jsonSprite));
-  spriteCopy.children.forEach((symbol: any) => {
+  const jsonSprite= getSvgJson(`${fullPath}${opts.subdirName}/${opts.fileName}.svg`) as INode ;
+  // Unnecessary as far as i can tell
+  // const spriteCopy = JSON.parse(JSON.stringify(jsonSprite));
+  jsonSprite.children.forEach((symbol: INode) => {
     modifyAttributes(symbol, new Map(), new Map());
   });
-  fs.writeFileSync(`${fullPath}${opts.subdirName}/${opts.fileName}.svg`, svgson.stringify(spriteCopy));
+  fs.writeFileSync(`${fullPath}${opts.subdirName}/${opts.fileName}.svg`, svgson.stringify(jsonSprite));
 }
 
-function modifyAttributes(el: any, registeredColors: Map<string, string>, registeredStrokeWidths: Map<string, string>) {
+function modifyAttributes(el: INode, registeredColors: Map<string, string>, registeredStrokeWidths: Map<string, string>) {
   // TODO: Make Gradients work! (stop-color)
   if(el.attributes && el.name !== 'style'){
     if(opts.colors.apply){
       // FILL
       let fill = el.attributes.fill;
-      if(fill && validValue(fill)) {
+
+      if (fill && validValue(fill)) {
         if(registeredColors.get(fill)) {
           // If fill color has already an assigned variable
-          el.attributes.fill = registeredColors.get(fill);
+          el.attributes.fill = registeredColors.get(fill) || '';
         } else {
           // If fill is a new color (gets registered)
           let varFill = variablizeColor(fill, registeredColors.size + 1);
@@ -231,7 +234,7 @@ function modifyAttributes(el: any, registeredColors: Map<string, string>, regist
       if(stroke && validValue(stroke)) {
         if(registeredColors.get(stroke)) {
           // If stroke has already an assigned variable
-          el.attributes.stroke = registeredColors.get(stroke);
+          el.attributes.stroke = registeredColors.get(stroke) || '';
         } else {
           // If color is a new color (gets registered)
           let varStroke = variablizeColor(stroke, registeredColors.size + 1);
@@ -247,7 +250,7 @@ function modifyAttributes(el: any, registeredColors: Map<string, string>, regist
       if(strokeWidth && validValue(strokeWidth)) {
         if(registeredStrokeWidths.get(strokeWidth)) {
           // If stroke-width has already an assigned variable
-          el.attributes['stroke-width'] = registeredStrokeWidths.get(strokeWidth);
+          el.attributes['stroke-width'] = registeredStrokeWidths.get(strokeWidth) || '';
         } else {
           // If stroke-width is a new stroke-width (gets registered)
           let varStrokeWidth = variablizeStrokeWidth(strokeWidth, registeredStrokeWidths.size + 1);
@@ -271,15 +274,14 @@ function modifyAttributes(el: any, registeredColors: Map<string, string>, regist
     if(opts.transition.apply) {
       // only apply transition to elements that actually need it
       if(el.attributes.fill || el.attributes.stroke || el.attributes['stroke-width']) {
-        const style = variablizeTransitionStyle(el.attributes.style);
-        el.attributes.style = style;
+        el.attributes.style = variablizeTransitionStyle(el.attributes.style);
         transitionApplyCount++;
       }
     }
   }
   // RECURSIVE FOR ALL CHILDREN
   if(el.children.length) {
-    el.children.forEach((child: HTMLOrSVGElement) => {
+    el.children.forEach((child: INode) => {
       modifyAttributes(child, registeredColors, registeredStrokeWidths);
     });
   }
@@ -302,7 +304,7 @@ function variablizeStrokeWidth(strokeWidth: string, id: number): string {
   return `var(${varStr}, ${strokeWidth})`;
 }
 
-function variablizeTransitionStyle(style: TransitionOptions) {
+function variablizeTransitionStyle(style: string) {
   const varStr = `--${opts.transition.name}`;
   const completeStr = opts.transition.default ? `var(${varStr}, ${opts.transition.default})` : `var(${varStr})`;
   return style ? `${style} transition: ${completeStr};` : `transition: ${completeStr};`;
@@ -315,9 +317,10 @@ function validValue(str: string): boolean {
   return !str.includes('var(') && !str.includes('url(') && !str.includes('none');
 }
 
-function getSvgJson(path: string): PlainObjectType | undefined {
+function getSvgJson(path: string): INode | void {
   try {
     const file = fs.readFileSync(path);
+
     return svgson.parseSync(file.toString());
   } catch (err) {
     console.error(err);

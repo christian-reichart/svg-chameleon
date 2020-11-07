@@ -5,19 +5,21 @@ export interface BaseOptions {
     name: string;
 }
 
-export interface StrokeWidthOptions extends BaseOptions {
+export type StrokeWidthOptions = BaseOptions & {
     nonScaling: boolean;
     customVars?: PlainObjectType;
 }
-export interface ColorOptions extends BaseOptions {
+
+export type ColorOptions = BaseOptions & {
     preserveOriginal: boolean;
     customVars?: PlainObjectType;
 }
 
-export interface TransitionOptions extends BaseOptions {
+export type TransitionOptions = BaseOptions & {
     default: null;
 }
 
+// @Todo(phil): make only path required in create method
 export interface ChameleonOptions {
     path: string;
     subdirName: string;
