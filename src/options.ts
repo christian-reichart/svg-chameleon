@@ -1,5 +1,6 @@
-const findUp = require('find-up');
-const { getAbsolutePath } = require('./util');
+import  findUp from 'find-up';
+import { getAbsolutePath } from './util';
+import { ChameleonOptions } from './lib/interfaces';
 
 const configFileNames = ['chameleon.config.js', 'chameleon.config.json'];
 
@@ -7,7 +8,7 @@ const configFileNames = ['chameleon.config.js', 'chameleon.config.json'];
  * Get default options
  * Return a new instance to prevent possible mutabillity issues
  */
-const getDefaultOptions = () => ({
+export const getDefaultOptions = (): ChameleonOptions => ({
   path: '',
   subdirName: 'chameleon-sprite',
   fileName: 'chameleon-sprite',
@@ -35,7 +36,7 @@ const getDefaultOptions = () => ({
  * 
  * @param { string | undefined } path 
  */
-const getConfigPath = async (path) => {
+const getConfigPath = async (path: string | undefined): Promise<string | undefined> => {
   return path !== undefined ? getAbsolutePath(path) : await findUp(configFileNames)
 }
 
@@ -44,7 +45,7 @@ const getConfigPath = async (path) => {
  * 
  * @param { string | undefined } path 
  */
-const getOptionsFromConfigFile = async (path) => {
+export const getOptionsFromConfigFile = async (path: string | undefined): Promise<ChameleonOptions> => {
   const configPath = await getConfigPath(path);
 
   try {
@@ -54,5 +55,3 @@ const getOptionsFromConfigFile = async (path) => {
   }
 }
 
-exports.getDefaultOptions = getDefaultOptions;
-exports.getOptionsFromConfigFile = getOptionsFromConfigFile;

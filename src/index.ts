@@ -1,51 +1,27 @@
 import { ChameleonOptions } from './lib/interfaces';
 import { PlainObjectType } from './lib/types';
+import { getAbsolutePath, deepMerge } from './util';
+import { getDefaultOptions } from './options';
 
 import * as fs from 'fs';
-import * as path from 'path';
+import { join, dirname, resolve } from 'path';
 import chalk from 'chalk';
-import svgson from 'svgson';
 import SVGO from 'svgo';
 import sprite from 'svg-sprite';
-import { INode } from 'svgson';
+import * as svgson from 'svgson';
+import { INode }from 'svgson';
 
-let fullPath = process.cwd() + '/';
+let opts: ChameleonOptions;
+let fullPath: string;
+let svgCount: number = 0;
+let colorChangeCount: number = 0;
+let strokeWidthChangeCount: number = 0;
+let transitionApplyCount: number = 0;
 
-const opts: ChameleonOptions = {
-  path: '',
-  subdirName: 'chameleon-sprite',
-  fileName: 'chameleon-sprite',
-  css: false,
-  scss: false,
-  colors: {
-    apply: true,
-    name: 'svg-custom-color',
-    preserveOriginal: true,
-  },
-  strokeWidths: {
-    apply: true,
-    name: 'svg-custom-stroke-width',
-    nonScaling: false,
-  },
-  transition: {
-    apply: false,
-    name: 'svg-custom-transition',
-    default: null,
-  },
-};
+export const create = async (customOptions: Partial<ChameleonOptions> = {}): Promise<void> => {
+  opts = applyCustomOptions(customOptions);
+  fullPath = getAbsolutePath(opts.path);
 
-let opts;
-let fullPath;
-let svgCount = 0;
-let colorChangeCount = 0;
-let strokeWidthChangeCount = 0;
-let transitionApplyCount = 0;
-
-export const create = async (customOptions: ChameleonOptions): Promise<void> => {
-  if(customOptions) {
-    applyCustomOptions(customOptions);
-    updateFullPath();
-  }
   // Creating the basic sprite using svg-sprite
   console.log(chalk.grey(`Creating basic sprite inside '${join(fullPath, opts.subdirName)}' ...`));
   try {
@@ -173,9 +149,9 @@ async function createRegularSprite(): Promise<void> {
           console.log(chalk.yellow(`Skipping ${item}, because the file is empty...`));
           continue;
         }
-        const styleConvertedFile = await svgoConvertStyles.optimize(file, {path: fullPath + item});
+        const styleConvertedFile = await svgoConvertStyles.optimize(file, { path });
         optimizedFile = await svgoRemoveStyles.optimize(styleConvertedFile.data);
-        spriter.add(path.resolve(fullPath + item), '', optimizedFile.data);
+        spriter.add(resolve(path), '', optimizedFile.data);
         svgCount++;
       } catch (err) {
         throw err;
@@ -197,7 +173,7 @@ async function createRegularSprite(): Promise<void> {
     // this has no effect as far as i can see
     for (let mode in result) {
         for (let resource in result[mode]) {
-            fs.mkdirSync(path.dirname(result[mode][resource].path), { recursive: true });
+            fs.mkdirSync(dirname(result[mode][resource].path), { recursive: true });
             fs.writeFileSync(result[mode][resource].path, result[mode][resource].contents);
         }
     }
@@ -205,9 +181,8 @@ async function createRegularSprite(): Promise<void> {
 }
 
 async function createInjectedSprite(): Promise<void> {
-  const jsonSprite= getSvgJson(`${fullPath}${opts.subdirName}/${opts.fileName}.svg`) as INode ;
-  // Unnecessary as far as i can tell
-  // const spriteCopy = JSON.parse(JSON.stringify(jsonSprite));
+  const filePath = join(fullPath, opts.subdirName, `${opts.fileName}.svg`)
+  const jsonSprite = getSvgJson(filePath) as INode ;
   jsonSprite.children.forEach((symbol: INode) => {
     modifyAttributes(symbol, new Map(), new Map());
   });
@@ -331,29 +306,12 @@ function getSvgJson(path: string): INode | void {
   }
 }
 
-function getFolderPath(path: string): string {
-  return !path || path.endsWith('/') ? path : path +'/';
-}
-
-function updateFullPath(): void {
-  fullPath = process.cwd() + '/' + opts.path;
-}
-
-function applyCustomOptions(customOptions: ChameleonOptions): void {
-  if(customOptions.transition && customOptions.transition.name || customOptions.transition && customOptions.transition.default) {
-    opts.transition.apply = true;
+function applyCustomOptions(customOptions: Partial<ChameleonOptions>): ChameleonOptions {
+  if (customOptions.transition && customOptions.transition.name || customOptions.transition && customOptions.transition.default) {
+    customOptions.transition.apply = true;
   }
-  merge(opts, customOptions);
-  opts.path = getFolderPath(opts.path);
-}
 
-// Merge a `source` object to a `target` recursively
-function merge (target: PlainObjectType, source: PlainObjectType): PlainObjectType {
-  // Iterate through `source` properties and if an `Object` set property to merge of `target` and `source` properties
-  for (const key of Object.keys(source)) {
-    if (source[key] instanceof Object) Object.assign(source[key], merge(target[key], source[key]))
-  }
-  return deepMerge(getDefaultOptions(), customOptions);
+  return deepMerge<ChameleonOptions>(getDefaultOptions(), customOptions);
 }
 
 function handleError(err: Error): void {

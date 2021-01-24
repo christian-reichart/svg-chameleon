@@ -1,52 +1,55 @@
 #! /usr/bin/env node
-
 import { PlainObjectType } from './lib/types';
 import { ChameleonOptions } from './lib/interfaces';
 import * as chameleon  from './';
 import chalk from 'chalk';
 import yargs from 'yargs';
+import { getOptionsFromConfigFile } from './options';
+import { deepMerge } from './util';
+
+const { argv } = yargs
+.boolean(['css', 'scss', 'cApply','cPreserve', 'swApply', 'swNonScaling', 'tApply'])
+.string(['config', 'path', 'subdirName', 'fileName', 'cName', 'cCustomVars', 'swName', 'swCustomVars', 'tName', 'tDefault']);
 
 (async () => {
-  let opts;
   try {
-    opts = getOptionsAsObject();
+    const configOptions = await getOptionsFromConfigFile(argv.config);
+    const cliOptions = getOptionsAsObject();
+    const options = deepMerge<Partial<ChameleonOptions>>(configOptions, cliOptions);
+
+    await chameleon.create(options);
   } catch(err) {
     console.error(chalk.redBright(err));
-    return;
   }
-  await chameleon.create(opts);
 })();
 
 function getOptionsAsObject(): ChameleonOptions {
-  const args = yargs
-      .boolean(['css', 'scss', 'cApply','cPreserve', 'swApply', 'swNonScaling', 'tApply']);
-
   const colors = Object.assign({},
-      args.argv.cApply !== undefined && {apply: args.argv.cApply},
-    typeof args.argv.cName === 'string' && {name: args.argv.cName},
-    args.argv.cPreserve !== undefined && {preserveOriginal: args.argv.cPreserve},
-    typeof args.argv.cCustomVars === 'string' && {customVars: getCustomVarsAsObject(args.argv.cCustomVars)}
+      argv.cApply !== undefined && {apply: argv.cApply},
+    typeof argv.cName === 'string' && {name: argv.cName},
+    argv.cPreserve !== undefined && {preserveOriginal: argv.cPreserve},
+    typeof argv.cCustomVars === 'string' && {customVars: getCustomVarsAsObject(argv.cCustomVars)}
   );
 
   const strokeWidths = Object.assign({},
-    args.argv.swApply !== undefined && {apply: args.argv.swApply},
-    typeof args.argv.swName === 'string' && {name: args.argv.swName},
-    args.argv.swNonScaling !== undefined && {nonScaling: args.argv.swNonScaling},
-    typeof args.argv.swCustomVars === 'string' && {customVars: getCustomVarsAsObject(args.argv.swCustomVars)}
+    argv.swApply !== undefined && {apply: argv.swApply},
+    typeof argv.swName === 'string' && {name: argv.swName},
+    argv.swNonScaling !== undefined && {nonScaling: argv.swNonScaling},
+    typeof argv.swCustomVars === 'string' && {customVars: getCustomVarsAsObject(argv.swCustomVars)}
   );
 
   const transition = Object.assign({},
-    args.argv.tApply !== undefined && {apply: args.argv.tApply},
-    typeof args.argv.tName === 'string' && {name: args.argv.tName},
-    typeof args.argv.tDefault === 'string' && {default: args.argv.tDefault},
+    argv.tApply !== undefined && {apply: argv.tApply},
+    typeof argv.tName === 'string' && {name: argv.tName},
+    typeof argv.tDefault === 'string' && {default: argv.tDefault},
   );
 
   return Object.assign({},
-    typeof args.argv.path === 'string' && {path: args.argv.path},
-    typeof args.argv.subdirName === 'string' && {subdirName: args.argv.subdirName},
-    typeof args.argv.fileName === 'string' && {fileName: args.argv.fileName},
-    args.argv.css !== undefined && {css: args.argv.css},
-    args.argv.scss !== undefined && {scss: args.argv.scss},
+    typeof argv.path === 'string' && {path: argv.path},
+    typeof argv.subdirName === 'string' && {subdirName: argv.subdirName},
+    typeof argv.fileName === 'string' && {fileName: argv.fileName},
+    argv.css !== undefined && {css: argv.css},
+    argv.scss !== undefined && {scss: argv.scss},
     { colors },
     { strokeWidths },
     { transition },

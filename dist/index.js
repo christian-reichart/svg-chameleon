@@ -32,48 +32,25 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.create = void 0;
+const util_1 = require("./util");
+const options_1 = require("./options");
 const fs = __importStar(require("fs"));
-const path = __importStar(require("path"));
+const path_1 = require("path");
 const chalk_1 = __importDefault(require("chalk"));
-const svgson_1 = __importDefault(require("svgson"));
 const svgo_1 = __importDefault(require("svgo"));
 const svg_sprite_1 = __importDefault(require("svg-sprite"));
-let fullPath = process.cwd() + '/';
-const opts = {
-    path: '',
-    subdirName: 'chameleon-sprite',
-    fileName: 'chameleon-sprite',
-    css: false,
-    scss: false,
-    colors: {
-        apply: true,
-        name: 'svg-custom-color',
-        preserveOriginal: true,
-    },
-    strokeWidths: {
-        apply: true,
-        name: 'svg-custom-stroke-width',
-        nonScaling: false,
-    },
-    transition: {
-        apply: false,
-        name: 'svg-custom-transition',
-        default: null,
-    },
-};
+const svgson_1 = require("svgson");
 let opts;
 let fullPath;
 let svgCount = 0;
 let colorChangeCount = 0;
 let strokeWidthChangeCount = 0;
 let transitionApplyCount = 0;
-exports.create = (customOptions) => __awaiter(void 0, void 0, void 0, function* () {
-    if (customOptions) {
-        applyCustomOptions(customOptions);
-        updateFullPath();
-    }
+exports.create = (customOptions = {}) => __awaiter(void 0, void 0, void 0, function* () {
+    opts = applyCustomOptions(customOptions);
+    fullPath = util_1.getAbsolutePath(opts.path);
     // Creating the basic sprite using svg-sprite
-    console.log(chalk_1.default.grey(`Creating basic sprite inside '${join(fullPath, opts.subdirName)}' ...`));
+    console.log(chalk_1.default.grey(`Creating basic sprite inside '${path_1.join(fullPath, opts.subdirName)}' ...`));
     try {
         yield createRegularSprite();
         console.log(chalk_1.default.grey('Basic sprite created.'));
@@ -181,15 +158,15 @@ function createRegularSprite() {
             let optimizedFile;
             if (item.endsWith('.svg')) {
                 try {
-                    const path = join(fullPath, item);
+                    const path = path_1.join(fullPath, item);
                     file = fs.readFileSync(path, { encoding: 'utf-8' });
                     if (!file) {
                         console.log(chalk_1.default.yellow(`Skipping ${item}, because the file is empty...`));
                         continue;
                     }
-                    const styleConvertedFile = yield svgoConvertStyles.optimize(file, { path: fullPath + item });
+                    const styleConvertedFile = yield svgoConvertStyles.optimize(file, { path });
                     optimizedFile = yield svgoRemoveStyles.optimize(styleConvertedFile.data);
-                    spriter.add(path.resolve(fullPath + item), '', optimizedFile.data);
+                    spriter.add(path_1.resolve(path), '', optimizedFile.data);
                     svgCount++;
                 }
                 catch (err) {
@@ -212,7 +189,7 @@ function createRegularSprite() {
             // this has no effect as far as i can see
             for (let mode in result) {
                 for (let resource in result[mode]) {
-                    fs.mkdirSync(path.dirname(result[mode][resource].path), { recursive: true });
+                    fs.mkdirSync(path_1.dirname(result[mode][resource].path), { recursive: true });
                     fs.writeFileSync(result[mode][resource].path, result[mode][resource].contents);
                 }
             }
@@ -221,13 +198,15 @@ function createRegularSprite() {
 }
 function createInjectedSprite() {
     return __awaiter(this, void 0, void 0, function* () {
-        const jsonSprite = getSvgJson(`${fullPath}${opts.subdirName}/${opts.fileName}.svg`);
+        const filePath = path_1.join(fullPath, opts.subdirName, `${opts.fileName}.svg`);
+        const jsonSprite = getSvgJson(filePath);
+        console.log({ filePath, jsonSprite });
         // Unnecessary as far as i can tell
-        // const spriteCopy = JSON.parse(JSON.stringify(jsonSprite));
+        //const spriteCopy = JSON.parse(JSON.stringify(jsonSprite));
         jsonSprite.children.forEach((symbol) => {
             modifyAttributes(symbol, new Map(), new Map());
         });
-        fs.writeFileSync(`${fullPath}${opts.subdirName}/${opts.fileName}.svg`, svgson_1.default.stringify(jsonSprite));
+        fs.writeFileSync(`${fullPath}${opts.subdirName}/${opts.fileName}.svg`, svgson_1.stringify(jsonSprite));
     });
 }
 function modifyAttributes(el, registeredColors, registeredStrokeWidths) {
@@ -337,33 +316,17 @@ function validValue(str) {
 function getSvgJson(path) {
     try {
         const file = fs.readFileSync(path);
-        return svgson_1.default.parseSync(file.toString());
+        return svgson_1.parseSync(file.toString());
     }
     catch (err) {
         console.error(err);
     }
 }
-function getFolderPath(path) {
-    return !path || path.endsWith('/') ? path : path + '/';
-}
-function updateFullPath() {
-    fullPath = process.cwd() + '/' + opts.path;
-}
 function applyCustomOptions(customOptions) {
     if (customOptions.transition && customOptions.transition.name || customOptions.transition && customOptions.transition.default) {
-        opts.transition.apply = true;
+        customOptions.transition.apply = true;
     }
-    merge(opts, customOptions);
-    opts.path = getFolderPath(opts.path);
-}
-// Merge a `source` object to a `target` recursively
-function merge(target, source) {
-    // Iterate through `source` properties and if an `Object` set property to merge of `target` and `source` properties
-    for (const key of Object.keys(source)) {
-        if (source[key] instanceof Object)
-            Object.assign(source[key], merge(target[key], source[key]));
-    }
-    return deepMerge(getDefaultOptions(), customOptions);
+    return util_1.deepMerge(options_1.getDefaultOptions(), customOptions);
 }
 function handleError(err) {
     console.error(chalk_1.default.redBright(err));
