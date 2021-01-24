@@ -2,12 +2,12 @@
   "name": "svg-chameleon",
   "version": "0.4.1",
   "description": "A node module used for creating a customizable SVG sprite, containing SVGs as symbols that can be customized in the frontend using CSS variables and more.",
-  "main": "./src/index.ts",
+  "main": "./dist/index.js",
   "bin": "./dist/cli.js",
-  "type": "module",
+  "type": "commonjs",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "compile": "tsc && node dist/index.js",
+    "compile": "tsc -p tsconfig.json",
     "dev": "./node_modules/nodemon/bin/nodemon.js -e ts  --exec \"npm run compile\""
   },
   "repository": {

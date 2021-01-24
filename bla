@@ -1,0 +1,10 @@
+Error [ERR_UNSUPPORTED_DIR_IMPORT]: Directory import 'C:\Coding\svg-chameleon\dist\' is not supported resolving ES modules, imported from C:\Coding\svg-chameleon\dist\cli.js
+    at finalizeResolution (internal/modules/esm/resolve.js:279:17)
+    at moduleResolve (internal/modules/esm/resolve.js:665:10)
+    at Loader.defaultResolve [as _resolve] (internal/modules/esm/resolve.js:755:11)
+    at Loader.resolve (internal/modules/esm/loader.js:97:40)
+    at Loader.getModuleJob (internal/modules/esm/loader.js:243:28)
+    at ModuleWrap.<anonymous> (internal/modules/esm/module_job.js:46:40)
+    at link (internal/modules/esm/module_job.js:45:36) {
+  code: 'ERR_UNSUPPORTED_DIR_IMPORT',
+  url: 'file:///C:/Coding/svg-chameleon/dist/'

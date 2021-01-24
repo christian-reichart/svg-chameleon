@@ -1,3 +1,23 @@
+"use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -7,12 +27,17 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-import * as fs from 'fs';
-import * as path from 'path';
-import chalk from 'chalk';
-import svgson from 'svgson';
-import SVGO from 'svgo';
-import sprite from 'svg-sprite';
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.create = void 0;
+const fs = __importStar(require("fs"));
+const path = __importStar(require("path"));
+const chalk_1 = __importDefault(require("chalk"));
+const svgson_1 = __importDefault(require("svgson"));
+const svgo_1 = __importDefault(require("svgo"));
+const svg_sprite_1 = __importDefault(require("svg-sprite"));
 let fullPath = process.cwd() + '/';
 const opts = {
     path: '',
@@ -36,68 +61,70 @@ const opts = {
         default: null,
     },
 };
+let opts;
+let fullPath;
 let svgCount = 0;
 let colorChangeCount = 0;
 let strokeWidthChangeCount = 0;
 let transitionApplyCount = 0;
-export const create = (customOptions) => __awaiter(void 0, void 0, void 0, function* () {
+exports.create = (customOptions) => __awaiter(void 0, void 0, void 0, function* () {
     if (customOptions) {
         applyCustomOptions(customOptions);
         updateFullPath();
     }
     // Creating the basic sprite using svg-sprite
-    console.log(chalk.grey(`Creating basic sprite inside '${fullPath}${opts.subdirName}/' ...`));
+    console.log(chalk_1.default.grey(`Creating basic sprite inside '${join(fullPath, opts.subdirName)}' ...`));
     try {
         yield createRegularSprite();
-        console.log(chalk.grey('Basic sprite created.'));
+        console.log(chalk_1.default.grey('Basic sprite created.'));
         // After creation, read sprite and inject it with variables
         // Orignal sprite is then overridden
-        console.log(chalk.grey('-------------------------------'));
-        console.log(chalk.hex('#FFBE5E')('Modifying ') +
-            chalk.hex('#FFF25E')('the ') +
-            chalk.hex('#A3FF5E')('sprite ') +
-            chalk.hex('#5EFF8B')('to ') +
-            chalk.hex('#5EF5FF')('become ') +
-            chalk.hex('#6E8EFF')('an ') +
-            chalk.hex('#AE5EFF')('adaptable ') +
-            chalk.hex('#FF5EDB')('chameleon') +
-            chalk.hex('#FF5E84')('...'));
-        console.log(chalk.grey('-------------------------------'));
+        console.log(chalk_1.default.grey('-------------------------------'));
+        console.log(chalk_1.default.hex('#FFBE5E')('Modifying ') +
+            chalk_1.default.hex('#FFF25E')('the ') +
+            chalk_1.default.hex('#A3FF5E')('sprite ') +
+            chalk_1.default.hex('#5EFF8B')('to ') +
+            chalk_1.default.hex('#5EF5FF')('become ') +
+            chalk_1.default.hex('#6E8EFF')('an ') +
+            chalk_1.default.hex('#AE5EFF')('adaptable ') +
+            chalk_1.default.hex('#FF5EDB')('chameleon') +
+            chalk_1.default.hex('#FF5E84')('...'));
+        console.log(chalk_1.default.grey('-------------------------------'));
         yield createInjectedSprite();
         // Done!
         if (opts.colors.apply) {
             if (colorChangeCount > 0) {
-                console.log(chalk.green(colorChangeCount) +
-                    chalk.grey(' color var injections into attributes.'));
+                console.log(chalk_1.default.green(colorChangeCount) +
+                    chalk_1.default.grey(' color var injections into attributes.'));
             }
             else {
-                console.log(chalk.yellow(colorChangeCount) +
-                    chalk.grey(' color vars were injected.'));
+                console.log(chalk_1.default.yellow(colorChangeCount) +
+                    chalk_1.default.grey(' color vars were injected.'));
             }
         }
         if (opts.strokeWidths.apply) {
             if (strokeWidthChangeCount > 0) {
-                console.log(chalk.green(strokeWidthChangeCount) +
-                    chalk.grey(' stroke-width var injections into attributes.'));
+                console.log(chalk_1.default.green(strokeWidthChangeCount) +
+                    chalk_1.default.grey(' stroke-width var injections into attributes.'));
             }
             else {
-                console.log(chalk.yellow(strokeWidthChangeCount) +
-                    chalk.grey(' stroke-width vars were injected.'));
+                console.log(chalk_1.default.yellow(strokeWidthChangeCount) +
+                    chalk_1.default.grey(' stroke-width vars were injected.'));
             }
         }
         if (opts.transition.apply) {
             if (transitionApplyCount > 0) {
-                console.log(chalk.green(transitionApplyCount) +
-                    chalk.grey(' transition injections into tags.'));
+                console.log(chalk_1.default.green(transitionApplyCount) +
+                    chalk_1.default.grey(' transition injections into tags.'));
             }
             else {
-                console.log(chalk.yellow(transitionApplyCount) +
-                    chalk.grey(' transitions were applied.'));
+                console.log(chalk_1.default.yellow(transitionApplyCount) +
+                    chalk_1.default.grey(' transitions were applied.'));
             }
         }
         cleanup();
-        console.log(chalk.grey('-------------------------------'));
-        console.log(chalk.green.bold('Task complete!'));
+        console.log(chalk_1.default.grey('-------------------------------'));
+        console.log(chalk_1.default.green.bold('Task complete!'));
     }
     catch (err) {
         handleError(err);
@@ -105,7 +132,7 @@ export const create = (customOptions) => __awaiter(void 0, void 0, void 0, funct
 });
 function createRegularSprite() {
     return __awaiter(this, void 0, void 0, function* () {
-        const spriter = new sprite({
+        const spriter = new svg_sprite_1.default({
             dest: fullPath,
             svg: {
                 xmlDeclaration: false,
@@ -128,7 +155,7 @@ function createRegularSprite() {
          * Holzhammermethode! :D
          */
         //This SVGO configuration converts styles from a <style> tag to inline attributes
-        const svgoConvertStyles = new SVGO({
+        const svgoConvertStyles = new svgo_1.default({
             plugins: [{
                     inlineStyles: {
                         onlyMatchedOnce: false
@@ -136,7 +163,7 @@ function createRegularSprite() {
                 }]
         });
         // This SVGO configuration removes all style tags.
-        const svgoRemoveStyles = new SVGO({
+        const svgoRemoveStyles = new svgo_1.default({
             plugins: [{
                     removeStyleElement: true,
                 }]
@@ -154,9 +181,10 @@ function createRegularSprite() {
             let optimizedFile;
             if (item.endsWith('.svg')) {
                 try {
-                    file = fs.readFileSync(fullPath + item, { encoding: 'utf-8' });
+                    const path = join(fullPath, item);
+                    file = fs.readFileSync(path, { encoding: 'utf-8' });
                     if (!file) {
-                        console.log(chalk.yellow(`Skipping ${item}, because the file is empty...`));
+                        console.log(chalk_1.default.yellow(`Skipping ${item}, because the file is empty...`));
                         continue;
                     }
                     const styleConvertedFile = yield svgoConvertStyles.optimize(file, { path: fullPath + item });
@@ -170,7 +198,7 @@ function createRegularSprite() {
             }
         }
         if (svgCount) {
-            console.log(chalk.green(svgs.length) + chalk.grey(' SVGs found.'));
+            console.log(chalk_1.default.green(svgs.length) + chalk_1.default.grey(' SVGs found.'));
         }
         else {
             throw new Error(`No SVG files found in '${fullPath}'. Make sure you are using the correct path.`);
@@ -199,7 +227,7 @@ function createInjectedSprite() {
         jsonSprite.children.forEach((symbol) => {
             modifyAttributes(symbol, new Map(), new Map());
         });
-        fs.writeFileSync(`${fullPath}${opts.subdirName}/${opts.fileName}.svg`, svgson.stringify(jsonSprite));
+        fs.writeFileSync(`${fullPath}${opts.subdirName}/${opts.fileName}.svg`, svgson_1.default.stringify(jsonSprite));
     });
 }
 function modifyAttributes(el, registeredColors, registeredStrokeWidths) {
@@ -309,7 +337,7 @@ function validValue(str) {
 function getSvgJson(path) {
     try {
         const file = fs.readFileSync(path);
-        return svgson.parseSync(file.toString());
+        return svgson_1.default.parseSync(file.toString());
     }
     catch (err) {
         console.error(err);
@@ -335,21 +363,10 @@ function merge(target, source) {
         if (source[key] instanceof Object)
             Object.assign(source[key], merge(target[key], source[key]));
     }
-    // Join `target` and modified `source`
-    Object.assign(target || {}, source);
-    return target;
+    return deepMerge(getDefaultOptions(), customOptions);
 }
 function handleError(err) {
-    console.error(chalk.redBright(err));
-    return;
-}
-function cleanup() {
-    svgCount = 0;
-    colorChangeCount = 0;
-    strokeWidthChangeCount = 0;
-    transitionApplyCount = 0;
-}
-//# sourceMappingURL=index.js.map    return;
+    console.error(chalk_1.default.redBright(err));
 }
 function cleanup() {
     svgCount = 0;
