@@ -1,20 +1,21 @@
 #! /usr/bin/env node
+import { PlainObjectType } from './lib/types';
+import { ChameleonOptions } from './lib/interfaces';
+import * as chameleon  from './';
+import chalk from 'chalk';
+import yargs from 'yargs';
+import { getOptionsFromConfigFile } from './options';
+import { deepMerge } from './util';
 
-const chameleon = require('./index.js');
-const chalk = require('chalk');
-
-const { getOptionsFromConfigFile } = require('./options');
-const { deepMerge } = require('./util');
-
-const { argv } = require('yargs')
-  .boolean(['css', 'scss', 'c-apply', 'c-preserve', 'sw-apply', 'sw-non-scaling', 't-apply']);
+const { argv } = yargs
+.boolean(['css', 'scss', 'cApply','cPreserve', 'swApply', 'swNonScaling', 'tApply'])
+.string(['config', 'path', 'subdirName', 'fileName', 'cName', 'cCustomVars', 'swName', 'swCustomVars', 'tName', 'tDefault']);
 
 (async () => {
   try {
-    const configPath = getConfigPath(argv);
-    const configOptions = await getOptionsFromConfigFile(configPath);
+    const configOptions = await getOptionsFromConfigFile(argv.config);
     const cliOptions = getOptionsAsObject();
-    const options = deepMerge(configOptions, cliOptions);
+    const options = deepMerge<Partial<ChameleonOptions>>(configOptions, cliOptions);
 
     await chameleon.create(options);
   } catch(err) {
@@ -22,46 +23,42 @@ const { argv } = require('yargs')
   }
 })();
 
-function getConfigPath({ config }) {
-  return typeof config === 'string' ? config : undefined;
-}
-
-function getOptionsAsObject() {
-  const colorOptions = Object.assign({},
-    argv.cApply !== undefined && {apply: argv.cApply},
+function getOptionsAsObject(): ChameleonOptions {
+  const colors = Object.assign({},
+      argv.cApply !== undefined && {apply: argv.cApply},
     typeof argv.cName === 'string' && {name: argv.cName},
     argv.cPreserve !== undefined && {preserveOriginal: argv.cPreserve},
     typeof argv.cCustomVars === 'string' && {customVars: getCustomVarsAsObject(argv.cCustomVars)}
   );
 
-  const strokeWidthOptions = Object.assign({},
+  const strokeWidths = Object.assign({},
     argv.swApply !== undefined && {apply: argv.swApply},
     typeof argv.swName === 'string' && {name: argv.swName},
     argv.swNonScaling !== undefined && {nonScaling: argv.swNonScaling},
     typeof argv.swCustomVars === 'string' && {customVars: getCustomVarsAsObject(argv.swCustomVars)}
   );
 
-  const transitionOptions = Object.assign({},
+  const transition = Object.assign({},
     argv.tApply !== undefined && {apply: argv.tApply},
     typeof argv.tName === 'string' && {name: argv.tName},
     typeof argv.tDefault === 'string' && {default: argv.tDefault},
   );
 
-  const options = Object.assign({},
+  return Object.assign({},
     typeof argv.path === 'string' && {path: argv.path},
     typeof argv.subdirName === 'string' && {subdirName: argv.subdirName},
     typeof argv.fileName === 'string' && {fileName: argv.fileName},
     argv.css !== undefined && {css: argv.css},
     argv.scss !== undefined && {scss: argv.scss},
-    {colors: colorOptions},
-    {strokeWidths: strokeWidthOptions},
-    {transition: transitionOptions},
+    { colors },
+    { strokeWidths },
+    { transition },
   );
-  return options;
 }
 
-function getCustomVarsAsObject(str) {
-  let obj = {};
+// @Todo add typing for ',' strings
+function getCustomVarsAsObject(str: string): PlainObjectType {
+  let obj: PlainObjectType = {};
   let splits = str.split(',');
   splits.forEach(pair => {
     let pairSplits = pair.split(':');

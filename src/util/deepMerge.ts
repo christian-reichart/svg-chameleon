@@ -1,9 +1,7 @@
 /**
  * Merge a `source` object to a `target` recursively
- * 
- * @param {string} path
  */
-const deepMerge = (target, source) => {
+export const deepMerge = <T>(target: any, source: any): T => {
   // Iterate through `source` properties and if an `Object` set property to merge of `target` and `source` properties
   for (const key of Object.keys(source)) {
     if (source[key] instanceof Object) Object.assign(source[key], deepMerge(target[key], source[key]))
@@ -11,5 +9,3 @@ const deepMerge = (target, source) => {
   // Join `target` and modified `source`
   return Object.assign(target || {}, source)
 }
-
-exports.deepMerge = deepMerge;
