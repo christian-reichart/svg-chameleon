@@ -20,7 +20,8 @@
   ],
   "author": "Christian Reichart <hello@christianreichart.de>",
   "contributors": [
-    "Sebastian Harter"
+    "Sebastian Harter",
+    "leChuckles"
   ],
   "license": "ISC",
   "dependencies": {
