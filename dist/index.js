@@ -288,14 +288,14 @@ function variablizeColor(p_color, id) {
     const varStr = id === 1 ? `--${opts.colors.name}` : `--${opts.colors.name}-${id}`;
     const color = opts.colors.preserveOriginal ? p_color : 'currentColor';
     if (opts.colors.customVars && opts.colors.customVars[p_color]) {
-        return `var(--${opts.colors.customVars[p_color]}, var(${varStr}, ${color}))`;
+        return `var(${varStr}, var(--${opts.colors.customVars[p_color]}, ${color}))`;
     }
     return `var(${varStr}, ${color})`;
 }
 function variablizeStrokeWidth(strokeWidth, id) {
     const varStr = id === 1 ? `--${opts.strokeWidths.name}` : `--${opts.strokeWidths.name}-${id}`;
     if (opts.strokeWidths.customVars && opts.strokeWidths.customVars[strokeWidth]) {
-        return `var(--${opts.strokeWidths.customVars[strokeWidth]}, var(${varStr}, ${strokeWidth}))`;
+        return `var(${varStr}, var(--${opts.strokeWidths.customVars[strokeWidth]}, ${strokeWidth}))`;
     }
     return `var(${varStr}, ${strokeWidth})`;
 }
