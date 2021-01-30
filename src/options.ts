@@ -28,7 +28,7 @@ export const getDefaultOptions = (): ChameleonOptions => ({
   transition: {
     apply: false,
     name: 'svg-custom-transition',
-    default: null,
+    default: undefined,
   },
 });
 
