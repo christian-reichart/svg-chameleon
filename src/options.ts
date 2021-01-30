@@ -1,4 +1,5 @@
 import  findUp from 'find-up';
+import chalk from 'chalk';
 import { getAbsolutePath } from './util';
 import { ChameleonOptions } from './lib/interfaces';
 
@@ -32,9 +33,9 @@ export const getDefaultOptions = (): ChameleonOptions => ({
 });
 
 /**
- * Get config path 
- * 
- * @param { string | undefined } path 
+ * Get config path
+ *
+ * @param { string | undefined } path
  */
 const getConfigPath = async (path: string | undefined): Promise<string | undefined> => {
   return path !== undefined ? getAbsolutePath(path) : await findUp(configFileNames)
@@ -42,16 +43,19 @@ const getConfigPath = async (path: string | undefined): Promise<string | undefin
 
 /**
  * Get options from config file
- * 
- * @param { string | undefined } path 
+ *
+ * @param { string | undefined } path
  */
 export const getOptionsFromConfigFile = async (path: string | undefined): Promise<ChameleonOptions> => {
   const configPath = await getConfigPath(path);
 
   try {
+    if(configPath) {
+      console.log(chalk.grey(`Found config file under '${configPath}.'`));
+    }
     return configPath !== undefined ? require(configPath) : {};
   } catch (error) {
-    throw new Error(`Could not load config file from ${path}`);
+    throw new Error(`There was a problem loading your config file. ` + error);
   }
 }
 

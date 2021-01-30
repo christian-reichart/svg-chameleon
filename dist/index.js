@@ -39,7 +39,7 @@ const path_1 = require("path");
 const chalk_1 = __importDefault(require("chalk"));
 const svgo_1 = __importDefault(require("svgo"));
 const svg_sprite_1 = __importDefault(require("svg-sprite"));
-const svgson_1 = require("svgson");
+const svgson = __importStar(require("svgson"));
 let opts;
 let fullPath;
 let svgCount = 0;
@@ -200,13 +200,10 @@ function createInjectedSprite() {
     return __awaiter(this, void 0, void 0, function* () {
         const filePath = path_1.join(fullPath, opts.subdirName, `${opts.fileName}.svg`);
         const jsonSprite = getSvgJson(filePath);
-        console.log({ filePath, jsonSprite });
-        // Unnecessary as far as i can tell
-        //const spriteCopy = JSON.parse(JSON.stringify(jsonSprite));
         jsonSprite.children.forEach((symbol) => {
             modifyAttributes(symbol, new Map(), new Map());
         });
-        fs.writeFileSync(`${fullPath}${opts.subdirName}/${opts.fileName}.svg`, svgson_1.stringify(jsonSprite));
+        fs.writeFileSync(`${fullPath}${opts.subdirName}/${opts.fileName}.svg`, svgson.stringify(jsonSprite));
     });
 }
 function modifyAttributes(el, registeredColors, registeredStrokeWidths) {
@@ -316,7 +313,7 @@ function validValue(str) {
 function getSvgJson(path) {
     try {
         const file = fs.readFileSync(path);
-        return svgson_1.parseSync(file.toString());
+        return svgson.parseSync(file.toString());
     }
     catch (err) {
         console.error(err);

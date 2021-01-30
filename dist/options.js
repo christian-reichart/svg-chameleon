@@ -14,6 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getOptionsFromConfigFile = exports.getDefaultOptions = void 0;
 const find_up_1 = __importDefault(require("find-up"));
+const chalk_1 = __importDefault(require("chalk"));
 const util_1 = require("./util");
 const configFileNames = ['chameleon.config.js', 'chameleon.config.json'];
 /**
@@ -58,10 +59,13 @@ const getConfigPath = (path) => __awaiter(void 0, void 0, void 0, function* () {
 exports.getOptionsFromConfigFile = (path) => __awaiter(void 0, void 0, void 0, function* () {
     const configPath = yield getConfigPath(path);
     try {
+        if (configPath) {
+            console.log(chalk_1.default.grey(`Found config file under '${configPath}.'`));
+        }
         return configPath !== undefined ? require(configPath) : {};
     }
     catch (error) {
-        throw new Error(`Could not load config file from ${path}`);
+        throw new Error(`There was a problem loading your config file. ` + error);
     }
 });
 //# sourceMappingURL=options.js.map

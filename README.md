@@ -90,7 +90,7 @@ The creation of the chameleon sprite can be customized with various options.
 ### Options as JS object
 
 ```javascript
-chameleon.create({
+module.exports = {
   path: 'path/to/svg/directory/',           // default: '' (current working directory)
   subdirName: 'my-sprite-dir',              // default: 'chameleon-sprite' (created inside your SVG directory, stores all generated files)
   fileName: 'my-sprite',                    // default: 'chameleon-sprite' (used for .svg, .scss and .css files)
@@ -119,7 +119,7 @@ chameleon.create({
     name: 'my-transition-var-name',         // default: svg-custom-transition
     default: 'all .3s'                      // default: null (fallback, if no transition variable is assigned in your CSS)
   }
-});
+};
 ```
 
 ### Command line options
