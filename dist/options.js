@@ -40,7 +40,7 @@ exports.getDefaultOptions = () => ({
     transition: {
         apply: false,
         name: 'svg-custom-transition',
-        default: null,
+        default: undefined,
     },
 });
 /**

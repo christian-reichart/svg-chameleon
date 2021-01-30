@@ -13,9 +13,9 @@ const { argv } = yargs
 
 (async () => {
   try {
-    const configOptions = await getOptionsFromConfigFile(argv.config);
-    const cliOptions = getOptionsAsObject();
-    const options = deepMerge<Partial<ChameleonOptions>>(configOptions, cliOptions);
+    const configOptions: Partial<ChameleonOptions> = await getOptionsFromConfigFile(argv.config);
+    const cliOptions: Partial<ChameleonOptions> = getOptionsAsObject();
+    const options: Partial<ChameleonOptions> = deepMerge<Partial<ChameleonOptions>>(configOptions, cliOptions);
 
     await chameleon.create(options);
   } catch(err) {

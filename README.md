@@ -114,7 +114,7 @@ module.exports = {
   transition: {
     apply: true,                            // default: false (automatically true if one of the other transition options is given)
     name: 'my-transition-var-name',         // default: svg-custom-transition
-    default: 'all .3s'                      // default: null (fallback, if no transition variable is assigned in your CSS)
+    default: 'all .3s'                      // fallback, if no transition variable is assigned in your CSS
   }
 };
 ```

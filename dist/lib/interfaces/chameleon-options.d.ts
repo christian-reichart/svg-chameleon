@@ -12,7 +12,7 @@ export declare type ColorOptions = BaseOptions & {
     customVars?: PlainObjectType;
 };
 export declare type TransitionOptions = BaseOptions & {
-    default: null;
+    default?: string;
 };
 export interface ChameleonOptions {
     path: string;

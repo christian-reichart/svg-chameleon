@@ -16,10 +16,8 @@ export type ColorOptions = BaseOptions & {
 }
 
 export type TransitionOptions = BaseOptions & {
-    default: null;
+    default?: string;
 }
-
-// @Todo(phil): make only path required in create method
 export interface ChameleonOptions {
     path: string;
     subdirName: string;
