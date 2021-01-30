@@ -49,17 +49,14 @@ Provided you wrap the SVG with a ```<div class="circle-wrapper>```, the CSS abov
 ## Installation
 
 ``` bash
-# install locally to your project from git
-npm i git+https://github.com/christian-reichart/svg-chameleon
+# install locally to your project with npm
+npm i svg-chameleon
 ```
 
 ``` bash
 # Alternative: install globally for CLI usage in multiple projects
-npm i git+https://github.com/christian-reichart/svg-chameleon -g
+npm i svg-chameleon -g
 ```
-
-> npm release coming soon...
-
 
 ## Usage in Code
 
@@ -85,7 +82,7 @@ svg-chameleon --path=path/to/svg/directory/
 
 ## Options
 
-The creation of the chameleon sprite can be customized with various options.
+The creation of the chameleon sprite can be customized with various options. All options can be [saved in a config file](#options-as-js-or-json-config-file) or [used in the CLI](#command-line-options) directly.
 
 ### Options as JS object
 
@@ -122,10 +119,19 @@ module.exports = {
 };
 ```
 
+### Options as JS or JSON config file
+
+The above Javascript options can be persisted as either JS or a JSON configuration file. The file must be named chameleon.config.js or chameleon.config.json.
+
+The tool automatically searches for a configuration file in the directory where it was started and by going up in parent directories.
+
+Alternatively a `--config` option with a path to the configuration file can be passed to the cli.
+
 ### Command line options
 
 | option |  example | corresponding options property |
 |--|--|--|
+| `--config` | `--config=path/to/chameleon.config.js` |  |
 | `--path` | `--path=path/to/svg/directory/` | path |
 | `--subdir-name` | `--subdir-name=my-sprite-dir` | subdirName |
 | `--file-name` | `--file-name=my-sprite` | fileName |
