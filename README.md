@@ -78,7 +78,7 @@ module.exports = {
     name: 'my-color-var-naming',            // default: 'svg-custom-color' (additional colors are named 'svg-custom-color-2' and so on)
     preserveOriginal: false,                // default: true (if false, replaces original color with 'currentColor')
     customVars: {
-      '#D8D8D8': 'color-grey',              // this would result in --color-grey for every color attribute with '#D8D8D8'
+      '#D8D8D8': 'color-grey',              // this would result in --color-grey for every color attribute with '#D8D8D8' (--svg-custom-color will still override this)
       '#A3FF5E': 'color-primary'
     }
   },
@@ -87,7 +87,7 @@ module.exports = {
     name: 'my-stroke-width-var-naming',     // default: 'svg-custom-stroke-width' (additional stroke-widths are named 'svg-custom-stroke-width-2' and so on)
     nonScaling: true,                        // default: false (if true, preserves the stroke-width when scaling the SVG)
     customVars: {
-      '1': 'stroke-thin',                   // this would result in --stroke-thin for every stroke-width with '1'
+      '1': 'stroke-thin',                   // this would result in --stroke-thin for every stroke-width with '1' (--svg-custom-stroke-width will still override this)
       '3.5': 'stroke-bold'
     }
   },
