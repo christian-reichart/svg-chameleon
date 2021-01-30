@@ -1,3 +1,5 @@
+![SVG Chameleon Animation](https://christianreich.art/svg-chameleon-logo.gif)
+
 # SVG Chameleon
 
 SVG Chameleon creates a ```<symbol>``` sprite out of your SVG files that lets you easily modify colors and stroke-widths via CSS variables. It works with any SVGs, so no need for the designer or the developer to fiddle around with export options or the SVG markup. Thanks to the injected CSS variables, you don't need to worry about the Shadow DOM or specific tags of your SVG, just set your variables somewhere and they will cascade down to your SVG markup.
@@ -50,41 +52,19 @@ Provided you wrap the SVG with a ```<div class="circle-wrapper>```, the CSS abov
 
 ``` bash
 # install locally to your project with npm
-npm i svg-chameleon
-```
-
-``` bash
-# Alternative: install globally for CLI usage in multiple projects
-npm i svg-chameleon -g
-```
-
-## Usage in Code
-
-```javascript
-const chameleon = require('svg-chameleon');
-
-(async () => {
-  await chameleon.create({ path: 'path/to/svg/directory/' });
-})();
+npm i svg-chameleon --save-dev
 ```
 
 ## Command Line Usage
 
 ``` bash
-# Local usage
+# Example with path option
 npx svg-chameleon --path=path/to/svg/directory/
-```
-
-``` bash
-# Global usage
-svg-chameleon --path=path/to/svg/directory/
 ```
 
 ## Options
 
 The creation of the chameleon sprite can be customized with various options. All options can be [saved in a config file](#options-as-js-or-json-config-file) or [used in the CLI](#command-line-options) directly.
-
-### Options as JS object
 
 ```javascript
 module.exports = {
@@ -121,7 +101,7 @@ module.exports = {
 
 ### Options as JS or JSON config file
 
-The above Javascript options can be persisted as either JS or a JSON configuration file. The file must be named chameleon.config.js or chameleon.config.json.
+The above Javascript options can be persisted as either JS or a JSON configuration file. The file must be named **chameleon.config.js** or **chameleon.config.json**.
 
 The tool automatically searches for a configuration file in the directory where it was started and by going up in parent directories.
 
@@ -149,4 +129,12 @@ Alternatively a `--config` option with a path to the configuration file can be p
 | `--t-name` | `--t-name=my-transition-var-name` | transition.name |
 | `--t-default` | `--t-default='all .3s'` | transition.default |
 
+## Usage in Code
 
+```javascript
+const chameleon = require('svg-chameleon');
+
+(async () => {
+  await chameleon.create({ path: 'path/to/svg/directory/' });
+})();
+```
