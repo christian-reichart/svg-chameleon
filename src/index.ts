@@ -150,7 +150,7 @@ async function createRegularSprite({ path, dest, name, css, scss }: ChameleonOpt
 
         const styleConvertedFile = await svgoConvertStyles.optimize(file, { path: svgPath });
         optimizedFile = await svgoRemoveStyles.optimize(styleConvertedFile.data);
-        spriter.add(resolve(path), '', optimizedFile.data);
+        spriter.add(resolve(svgPath), '', optimizedFile.data);
         svgCount++;
       } catch (err) {
         throw err;
@@ -170,6 +170,8 @@ async function createRegularSprite({ path, dest, name, css, scss }: ChameleonOpt
     }
     // @Todo(Chris): check if this is ever used
     // this has no effect as far as i can see
+    console.log(result)
+
     for (let mode in result) {
       for (let resource in result[mode]) {
         fs.mkdirSync(dirname(result[mode][resource].path), { recursive: true });
