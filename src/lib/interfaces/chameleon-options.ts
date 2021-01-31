@@ -20,8 +20,8 @@ export type TransitionOptions = BaseOptions & {
 }
 export interface ChameleonOptions {
     path: string;
-    subdirName: string;
-    fileName: string;
+    dest: string;
+    name: string;
     css: boolean;
     scss: boolean;
     colors: ColorOptions;

@@ -69,8 +69,8 @@ The creation of the chameleon sprite can be customized with various options. All
 ```javascript
 module.exports = {
   path: 'path/to/svg/directory/',           // default: '' (current working directory)
-  subdirName: 'my-sprite-dir',              // default: 'chameleon-sprite' (created inside your SVG directory, stores all generated files)
-  fileName: 'my-sprite',                    // default: 'chameleon-sprite' (used for .svg, .scss and .css files)
+  dest: 'path/to/dest/directory/'           // default: path + name as subfolder, if dest is specified no additional subfolder is created
+  name: 'my-sprite',                        // default: 'chameleon-sprite' (used for .svg, .scss and .css files)
   scss: true,                               // default: false (creates scss with classes for dimensions)
   css: true,                                // default: false (creates css with classes for dimensions)
   colors: {
@@ -113,8 +113,8 @@ Alternatively a `--config` option with a path to the configuration file can be p
 |--|--|--|
 | `--config` | `--config=path/to/chameleon.config.js` |  |
 | `--path` | `--path=path/to/svg/directory/` | path |
-| `--subdir-name` | `--subdir-name=my-sprite-dir` | subdirName |
-| `--file-name` | `--file-name=my-sprite` | fileName |
+| `--dest` | `--path=path/to/dest/directory/`  | dest |
+| `--name` | `--name=my-sprite` | name |
 | `--css` | `--css` | css |
 | `--scss` | `--scss` | scss |
 | `--c-apply` | `--c-apply=false` | colors.apply |

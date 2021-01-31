@@ -1,4 +1,4 @@
-import  findUp from 'find-up';
+import findUp from 'find-up';
 import chalk from 'chalk';
 import { getAbsolutePath } from './util';
 import { ChameleonOptions } from './lib/interfaces';
@@ -11,8 +11,8 @@ const configFileNames = ['chameleon.config.js', 'chameleon.config.json'];
  */
 export const getDefaultOptions = (): ChameleonOptions => ({
   path: '',
-  subdirName: 'chameleon-sprite',
-  fileName: 'chameleon-sprite',
+  dest: '',
+  name: 'chameleon-sprite',
   css: false,
   scss: false,
   colors: {
@@ -50,7 +50,7 @@ export const getOptionsFromConfigFile = async (path: string | undefined): Promis
   const configPath = await getConfigPath(path);
 
   try {
-    if(configPath) {
+    if (configPath) {
       console.log(chalk.grey(`Found config file under '${configPath}.'`));
     }
     return configPath !== undefined ? require(configPath) : {};
