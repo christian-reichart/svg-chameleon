@@ -46,8 +46,8 @@ function getOptionsAsObject(): ChameleonOptions {
 
   return Object.assign({},
     typeof argv.path === 'string' && { path: argv.path },
-    typeof argv.subdirName === 'string' && { subdirName: argv.subdirName },
-    typeof argv.fileName === 'string' && { fileName: argv.fileName },
+    typeof argv.dest === 'string' && { dest: argv.dest },
+    typeof argv.name === 'string' && { name: argv.name },
     argv.css !== undefined && { css: argv.css },
     argv.scss !== undefined && { scss: argv.scss },
     { colors },
