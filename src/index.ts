@@ -88,7 +88,7 @@ export const create = async (customOptions: Partial<ChameleonOptions> = {}): Pro
   }
 }
 
-async function createRegularSprite({ path, dest, name, css, scss }: ChameleonOptions): Promise<void> {
+async function createRegularSprite({ path, dest, name, dimensionStyles: { css, scss } }: ChameleonOptions): Promise<void> {
   const spriter = new sprite({
     dest,
     svg: {
@@ -101,8 +101,8 @@ async function createRegularSprite({ path, dest, name, css, scss }: ChameleonOpt
         dest,
         sprite: `${name}.svg`,
         render: {
-          css: css ? { dest: `${name}.css` } : false,
-          scss: scss ? { dest: `${name}.scss` } : false,
+          css: css.create ? { dest: css.dest } : false,
+          scss: scss.create ? { dest: scss.dest } : false,
         }
       }
     },
@@ -168,9 +168,6 @@ async function createRegularSprite({ path, dest, name, css, scss }: ChameleonOpt
     if (err) {
       throw err;
     }
-    // @Todo(Chris): check if this is ever used
-    // this has no effect as far as i can see
-    console.log(result)
 
     for (let mode in result) {
       for (let resource in result[mode]) {
@@ -189,7 +186,6 @@ async function createInjectedSprite(opts: ChameleonOptions): Promise<void> {
     modifyAttributes(symbol, opts);
   });
 
-  console.log(filePath);
   fs.writeFileSync(filePath, svgson.stringify(jsonSprite));
 }
 
@@ -323,10 +319,34 @@ function applyCustomOptions(customOptions: Partial<ChameleonOptions>): Chameleon
     customOptions.transition.apply = true;
   }
 
+  console.log(customOptions.dimensionStyles)
+
+  if (customOptions.dimensionStyles) {
+    const css = customOptions.dimensionStyles.css;
+    const scss = customOptions.dimensionStyles.scss;
+    customOptions.dimensionStyles.css.create = css.create === true || css.name !== undefined || css.dest !== undefined;
+    customOptions.dimensionStyles.scss.create = scss.create === true || scss.name !== undefined || scss.dest !== undefined;
+  }
+
   const options = deepMerge<ChameleonOptions>(getDefaultOptions(), customOptions);
 
   options.path = getAbsolutePath(options.path);
   options.dest = options.dest ? getAbsolutePath(options.dest) : join(options.path, options.name);
+
+
+  const css = options.dimensionStyles.css
+  const cssName = `${css.name || options.name}.css`;
+  const cssPath = getAbsolutePath(css.dest || options.dest);
+
+  const scss = options.dimensionStyles.scss
+  const scssName = `${scss.name || options.name}.scss`;
+  const scssPath = getAbsolutePath(scss.dest || options.dest);
+
+  css.dest = join(cssPath, cssName);
+  scss.dest = join(scssPath, scssName);
+
+
+  console.log(options)
 
   return options;
 }

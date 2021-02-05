@@ -71,8 +71,18 @@ module.exports = {
   path: 'path/to/svg/directory/',           // default: '' (current working directory)
   dest: 'path/to/dest/directory/'           // default: path + name as subfolder, if dest is specified no additional subfolder is created
   name: 'my-sprite',                        // default: 'chameleon-sprite' (used for .svg, .scss and .css files)
-  scss: true,                               // default: false (creates scss with classes for dimensions)
-  css: true,                                // default: false (creates css with classes for dimensions)
+  dimensionStyles: {
+    css: {
+      create: false,                        // default: false (creates css with classes for dimensions / automatically true if other option is set)
+      dest: null,                           // default: same dir as sprite
+      name: null                            // default: name
+    },
+    scss: {
+      create: false,                        // default: false (creates scss with classes for dimensions / automatically true if other option is set)
+      dest: null,                           // default same dir as sprite
+      name: null                            // default: name
+    },
+  },
   colors: {
     apply: false,                           // default: true
     name: 'my-color-var-naming',            // default: 'svg-custom-color' (additional colors are named 'svg-custom-color-2' and so on)
@@ -115,8 +125,12 @@ Alternatively a `--config` option with a path to the configuration file can be p
 | `--path` | `--path=path/to/svg/directory/` | path |
 | `--dest` | `--path=path/to/dest/directory/`  | dest |
 | `--name` | `--name=my-sprite` | name |
-| `--css` | `--css` | css |
-| `--scss` | `--scss` | scss |
+| `--css` | `--css` | dimensionStyles.css.create |
+| `--css-dest` | `--css-dest=path/to/css/dest/directory/` | dimensionStyles.css.dest |
+| `--css-name` | `--css-name=my-style` | dimensionStyles.css.name |
+| `--scss` | `--scss` | dimensionStyles.scss.create |
+| `--scss-dest` | `--scss-dest=path/to/scss/dest/directory/` | dimensionStyles.scss.dest |
+| `--scss-name` | `--scss-name=my-style` | dimensionStyles.scss.name |
 | `--c-apply` | `--c-apply=false` | colors.apply |
 | `--c-name` | `--c-name=my-color-var-naming` | colors.name |
 | `--c-preserve` | `--c-preserve=false` | colors.preserveOriginal |

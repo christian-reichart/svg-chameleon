@@ -13,8 +13,18 @@ export const getDefaultOptions = (): ChameleonOptions => ({
   path: '',
   dest: '',
   name: 'chameleon-sprite',
-  css: false,
-  scss: false,
+  dimensionStyles: {
+    css: {
+      create: false,
+      dest: undefined,
+      name: undefined,
+    },
+    scss: {
+      create: false,
+      dest: undefined,
+      name: undefined,
+    }
+  },
   colors: {
     apply: true,
     name: 'svg-custom-color',

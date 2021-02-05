@@ -1,4 +1,3 @@
-#! /usr/bin/env node
 import { PlainObjectType } from './lib/types';
 import { ChameleonOptions } from './lib/interfaces';
 import * as chameleon from './';
@@ -9,7 +8,7 @@ import { deepMerge } from './util';
 
 const { argv } = yargs
   .boolean(['css', 'scss', 'cApply', 'cPreserve', 'swApply', 'swNonScaling', 'tApply'])
-  .string(['config', 'path', 'dest', 'name', 'cName', 'cCustomVars', 'swName', 'swCustomVars', 'tName', 'tDefault']);
+  .string(['config', 'path', 'dest', 'name', 'cssDest', 'cssName', 'scssDest', 'scssName', 'cName', 'cCustomVars', 'swName', 'swCustomVars', 'tName', 'tDefault']);
 
 (async () => {
   try {
@@ -24,6 +23,18 @@ const { argv } = yargs
 })();
 
 function getOptionsAsObject(): ChameleonOptions {
+  const css = Object.assign({},
+    argv.css !== undefined && { create: argv.css },
+    typeof argv.cssDest === 'string' && { dest: argv.cssDest },
+    typeof argv.cssName === 'string' && { name: argv.cssName },
+  );
+
+  const scss = Object.assign({},
+    argv.scss !== undefined && { create: argv.scss },
+    typeof argv.scssDest === 'string' && { dest: argv.scssDest },
+    typeof argv.scssName === 'string' && { name: argv.scssName },
+  );
+
   const colors = Object.assign({},
     argv.cApply !== undefined && { apply: argv.cApply },
     typeof argv.cName === 'string' && { name: argv.cName },
@@ -48,8 +59,7 @@ function getOptionsAsObject(): ChameleonOptions {
     typeof argv.path === 'string' && { path: argv.path },
     typeof argv.dest === 'string' && { dest: argv.dest },
     typeof argv.name === 'string' && { name: argv.name },
-    argv.css !== undefined && { css: argv.css },
-    argv.scss !== undefined && { scss: argv.scss },
+    { dimensionStyles: { css, scss } },
     { colors },
     { strokeWidths },
     { transition },
