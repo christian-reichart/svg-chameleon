@@ -101,7 +101,7 @@ module.exports = {
 
 ### Options as JS or JSON config file
 
-The above Javascript options can be persisted as either JS or a JSON configuration file. The file must be named **chameleon.config.js** or **chameleon.config.json**.
+The above Javascript options can be persisted as either JS or a JSON configuration file. The file must be named **chameleon.config.json** or **chameleon.config.json**.
 
 The tool automatically searches for a configuration file in the directory where it was started and by going up in parent directories.
 
@@ -111,7 +111,7 @@ Alternatively a `--config` option with a path to the configuration file can be p
 
 | option |  example | corresponding options property |
 |--|--|--|
-| `--config` | `--config=path/to/chameleon.config.js` |  |
+| `--config` | `--config=path/to/chameleon.config.json` |  |
 | `--path` | `--path=path/to/svg/directory/` | path |
 | `--subdir-name` | `--subdir-name=my-sprite-dir` | subdirName |
 | `--file-name` | `--file-name=my-sprite` | fileName |

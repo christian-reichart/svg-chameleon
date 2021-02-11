@@ -1,72 +1,113 @@
 #! /usr/bin/env node
-import { PlainObjectType } from './lib/types';
 import { ChameleonOptions } from './lib/interfaces';
 import * as chameleon  from './';
 import chalk from 'chalk';
 import yargs from 'yargs';
-import { getOptionsFromConfigFile } from './options';
-import { deepMerge } from './util';
+import  findUp from 'find-up';
+import * as fs from 'fs';
+import { setupOptions } from './options';
+const configPath = findUp.sync(['chameleon.config.json', 'chameleon.config.js']);
+// @ts-ignore
+const config = configPath ? JSON.parse(fs.readFileSync(configPath)) : {};
 
 const { argv } = yargs
-.boolean(['css', 'scss', 'cApply','cPreserve', 'swApply', 'swNonScaling', 'tApply'])
-.string(['config', 'path', 'subdirName', 'fileName', 'cName', 'cCustomVars', 'swName', 'swCustomVars', 'tName', 'tDefault']);
+    .option('css', {
+        type: 'boolean',
+        description: 'compile to css',
+    })
+    .option('scss', {
+        type: 'boolean',
+        description: 'compile to scss',
+    })
+    .option('path', {
+        type: 'string',
+        description: 'MISSING description',
+    })
+    .option('subdirName', {
+        type: 'string',
+        description: 'MISSING description',
+    })
+    .option('fileName', {
+        type: 'string',
+        description: 'MISSING description',
+    })
+    .option('colors.name', {
+        alias: 'cName',
+        type: 'string',
+        description: 'MISSING description',
+    })
+    .option('colors.apply', {
+        alias: 'cApply',
+        type: 'boolean',
+        description: 'MISSING description',
+    })
+    .option('colors.preserveOriginal', {
+        alias: 'cPreserve',
+        type: 'boolean',
+        description: 'MISSING description',
+    })
+    .option('colors.customVars', {
+        alias: 'cCustomVars',
+        type: 'string',
+        description: 'MISSING description',
+    })
+    .option('strokeWidths.name', {
+        alias: 'swName',
+        type: 'string',
+        description: 'MISSING description',
+    })
+    .option('strokeWidths.apply', {
+        alias: 'swApply',
+        type: 'boolean',
+        description: 'MISSING description',
+    })
+    .option('strokeWidths.nonScaling', {
+        alias: 'swNonScaling',
+        type: 'boolean',
+        description: 'MISSING description',
+    })
+    .option('strokeWith.customVars', {
+        alias: 'swCustomVars',
+        type: 'string',
+        description: 'MISSING description',
+    })
+    .option('transition.name', {
+        alias: 'tName',
+        type: 'string',
+        description: 'MISSING description',
+    })
+    .option('transition.apply', {
+        alias: 'tApply',
+        type: 'boolean',
+        description: 'MISSING description',
+    })
+    .option('transition.default', {
+        alias: 'tDefault',
+        type: 'string',
+        description: 'MISSING description',
+    })
+    .parserConfiguration({
+        "camel-case-expansion": false,
+        "dot-notation": true,
+        "strip-aliased": true,
+    })
+    .config(config)
+    .config()
+    .command<ChameleonOptions>(
+        'create',
+        'create a svg sprite',
+        () => {},
+        (argv: ChameleonOptions) => {
+            init(argv);
+        })
+    .argv;
 
-(async () => {
-  try {
-    const configOptions: Partial<ChameleonOptions> = await getOptionsFromConfigFile(argv.config);
-    const cliOptions: Partial<ChameleonOptions> = getOptionsAsObject();
-    const options: Partial<ChameleonOptions> = deepMerge<Partial<ChameleonOptions>>(configOptions, cliOptions);
-
-    await chameleon.create(options);
-  } catch(err) {
-    console.error(chalk.redBright(err));
-  }
-})();
-
-function getOptionsAsObject(): ChameleonOptions {
-  const colors = Object.assign({},
-      argv.cApply !== undefined && {apply: argv.cApply},
-    typeof argv.cName === 'string' && {name: argv.cName},
-    argv.cPreserve !== undefined && {preserveOriginal: argv.cPreserve},
-    typeof argv.cCustomVars === 'string' && {customVars: getCustomVarsAsObject(argv.cCustomVars)}
-  );
-
-  const strokeWidths = Object.assign({},
-    argv.swApply !== undefined && {apply: argv.swApply},
-    typeof argv.swName === 'string' && {name: argv.swName},
-    argv.swNonScaling !== undefined && {nonScaling: argv.swNonScaling},
-    typeof argv.swCustomVars === 'string' && {customVars: getCustomVarsAsObject(argv.swCustomVars)}
-  );
-
-  const transition = Object.assign({},
-    argv.tApply !== undefined && {apply: argv.tApply},
-    typeof argv.tName === 'string' && {name: argv.tName},
-    typeof argv.tDefault === 'string' && {default: argv.tDefault},
-  );
-
-  return Object.assign({},
-    typeof argv.path === 'string' && {path: argv.path},
-    typeof argv.subdirName === 'string' && {subdirName: argv.subdirName},
-    typeof argv.fileName === 'string' && {fileName: argv.fileName},
-    argv.css !== undefined && {css: argv.css},
-    argv.scss !== undefined && {scss: argv.scss},
-    { colors },
-    { strokeWidths },
-    { transition },
-  );
-}
-
-// @Todo add typing for ',' strings
-function getCustomVarsAsObject(str: string): PlainObjectType {
-  let obj: PlainObjectType = {};
-  let splits = str.split(',');
-  splits.forEach(pair => {
-    let pairSplits = pair.split(':');
-    if(pairSplits.length !== 2) {
-      throw new Error("Couldn't parse format for custom vars! Please use '<to-replace>:<custom-var-name>'.");
+async function init(options: ChameleonOptions): Promise<void> {
+    try {
+        await chameleon.create(setupOptions(options));
+    } catch(err) {
+        console.error(chalk.redBright(err));
     }
-    obj[pairSplits[0]] = pairSplits[1];
-  });
-
-  return obj;
 }
+
+export default argv;
