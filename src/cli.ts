@@ -5,7 +5,7 @@ import chalk from 'chalk';
 import yargs from 'yargs';
 import  findUp from 'find-up';
 import * as fs from 'fs';
-import { setupOptions } from './options';
+import { getDefaultOptions, setupOptions } from './options';
 const configPath = findUp.sync(['chameleon.config.json', 'chameleon.config.js']);
 
 const config = configPath ? JSON.parse(fs.readFileSync(configPath).toString()) : {};
@@ -94,7 +94,7 @@ const { argv } = yargs
     .config(config)
     .config()
     .command<ChameleonOptions>(
-        'create',
+        ['create', 'g'],
         'create a svg sprite',
         () => {},
         async (argv: ChameleonOptions) => {
@@ -104,7 +104,10 @@ const { argv } = yargs
 
 async function init(options: ChameleonOptions): Promise<void> {
     try {
-        await chameleon.create(setupOptions(options));
+        await chameleon.create(setupOptions({
+            ...getDefaultOptions(),
+            ...options,
+        }));
     } catch(err) {
         console.error(chalk.redBright(err));
     }

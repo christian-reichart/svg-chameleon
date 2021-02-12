@@ -58,6 +58,7 @@ function setupCustomVars(customVars: Array<PlainObjectType> | PlainObjectType): 
 }
 
 export const setupOptions = (options: ChameleonOptions): ChameleonOptions => {
+
   return {
     ...options,
     colors: {
