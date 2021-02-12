@@ -27,6 +27,5 @@ export interface ChameleonOptions {
     colors: ColorOptions;
     strokeWidths: StrokeWidthOptions;
     transition: TransitionOptions;
-    config?: string;
 }
 
