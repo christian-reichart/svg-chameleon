@@ -101,7 +101,7 @@ module.exports = {
 
 ### Options as JS or JSON config file
 
-The above Javascript options can be persisted as either JS or a JSON configuration file. The file must be named **chameleon.config.json** or **chameleon.config.json**.
+The above Javascript options can be persisted as either JS or a JSON configuration file. The file must be named **chameleon.config.json** or **chameleon.config.js**.
 
 The tool automatically searches for a configuration file in the directory where it was started and by going up in parent directories.
 
