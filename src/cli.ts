@@ -7,8 +7,8 @@ import  findUp from 'find-up';
 import * as fs from 'fs';
 import { setupOptions } from './options';
 const configPath = findUp.sync(['chameleon.config.json', 'chameleon.config.js']);
-// @ts-ignore
-const config = configPath ? JSON.parse(fs.readFileSync(configPath)) : {};
+
+const config = configPath ? JSON.parse(fs.readFileSync(configPath).toString()) : {};
 
 const { argv } = yargs
     .option('css', {
@@ -97,8 +97,8 @@ const { argv } = yargs
         'create',
         'create a svg sprite',
         () => {},
-        (argv: ChameleonOptions) => {
-            init(argv);
+        async (argv: ChameleonOptions) => {
+            await init(argv);
         })
     .argv;
 
@@ -111,3 +111,4 @@ async function init(options: ChameleonOptions): Promise<void> {
 }
 
 export default argv;
+
