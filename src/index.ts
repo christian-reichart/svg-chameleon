@@ -319,8 +319,6 @@ function applyCustomOptions(customOptions: Partial<ChameleonOptions>): Chameleon
     customOptions.transition.apply = true;
   }
 
-  console.log(customOptions.dimensionStyles)
-
   if (customOptions.dimensionStyles) {
     const css = customOptions.dimensionStyles.css;
     const scss = customOptions.dimensionStyles.scss;
@@ -344,9 +342,6 @@ function applyCustomOptions(customOptions: Partial<ChameleonOptions>): Chameleon
 
   css.dest = join(cssPath, cssName);
   scss.dest = join(scssPath, scssName);
-
-
-  console.log(options)
 
   return options;
 }
