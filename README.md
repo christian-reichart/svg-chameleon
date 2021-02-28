@@ -69,10 +69,20 @@ The creation of the chameleon sprite can be customized with various options. All
 ```javascript
 module.exports = {
   path: 'path/to/svg/directory/',           // default: '' (current working directory)
-  subdirName: 'my-sprite-dir',              // default: 'chameleon-sprite' (created inside your SVG directory, stores all generated files)
-  fileName: 'my-sprite',                    // default: 'chameleon-sprite' (used for .svg, .scss and .css files)
-  scss: true,                               // default: false (creates scss with classes for dimensions)
-  css: true,                                // default: false (creates css with classes for dimensions)
+  dest: 'path/to/dest/directory/'           // default: path + name as subfolder, if dest is specified no additional subfolder is created
+  name: 'my-sprite',                        // default: 'chameleon-sprite' (used for .svg, .scss and .css files)
+  dimensionStyles: {
+    css: {
+      create: false,                        // default: false (creates css with classes for dimensions / automatically true if other option is set)
+      dest: null,                           // default: same dir as sprite
+      name: null                            // default: name
+    },
+    scss: {
+      create: false,                        // default: false (creates scss with classes for dimensions / automatically true if other option is set)
+      dest: null,                           // default same dir as sprite
+      name: null                            // default: name
+    },
+  },
   colors: {
     apply: false,                           // default: true
     name: 'my-color-var-naming',            // default: 'svg-custom-color' (additional colors are named 'svg-custom-color-2' and so on)
@@ -113,10 +123,14 @@ Alternatively a `--config` option with a path to the configuration file can be p
 |--|--|--|
 | `--config` | `--config=path/to/chameleon.config.js` |  |
 | `--path` | `--path=path/to/svg/directory/` | path |
-| `--subdir-name` | `--subdir-name=my-sprite-dir` | subdirName |
-| `--file-name` | `--file-name=my-sprite` | fileName |
-| `--css` | `--css` | css |
-| `--scss` | `--scss` | scss |
+| `--dest` | `--path=path/to/dest/directory/`  | dest |
+| `--name` | `--name=my-sprite` | name |
+| `--css` | `--css` | dimensionStyles.css.create |
+| `--css-dest` | `--css-dest=path/to/css/dest/directory/` | dimensionStyles.css.dest |
+| `--css-name` | `--css-name=my-style` | dimensionStyles.css.name |
+| `--scss` | `--scss` | dimensionStyles.scss.create |
+| `--scss-dest` | `--scss-dest=path/to/scss/dest/directory/` | dimensionStyles.scss.dest |
+| `--scss-name` | `--scss-name=my-style` | dimensionStyles.scss.name |
 | `--c-apply` | `--c-apply=false` | colors.apply |
 | `--c-name` | `--c-name=my-color-var-naming` | colors.name |
 | `--c-preserve` | `--c-preserve=false` | colors.preserveOriginal |

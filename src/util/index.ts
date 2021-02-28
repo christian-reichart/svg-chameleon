@@ -1,2 +1,2 @@
-export { deepMerge }  from './deepMerge';
+export { deepMerge } from './deepMerge';
 export { getAbsolutePath } from './getAbsolutePath';

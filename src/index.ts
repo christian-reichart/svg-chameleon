@@ -1,3 +1,4 @@
+import { ColorOptions, StrokeWidthOptions, TransitionOptions } from './lib/interfaces/chameleon-options';
 import { ChameleonOptions } from './lib/interfaces';
 import { PlainObjectType } from './lib/types';
 import { getAbsolutePath, deepMerge } from './util';
@@ -9,23 +10,20 @@ import chalk from 'chalk';
 import SVGO from 'svgo';
 import sprite from 'svg-sprite';
 import * as svgson from 'svgson';
-import { INode }from 'svgson';
+import { INode } from 'svgson';
 
-let opts: ChameleonOptions;
-let fullPath: string;
 let svgCount: number = 0;
 let colorChangeCount: number = 0;
 let strokeWidthChangeCount: number = 0;
 let transitionApplyCount: number = 0;
 
 export const create = async (customOptions: Partial<ChameleonOptions> = {}): Promise<void> => {
-  opts = applyCustomOptions(customOptions);
-  fullPath = getAbsolutePath(opts.path);
+  const opts = applyCustomOptions(customOptions);
 
   // Creating the basic sprite using svg-sprite
-  console.log(chalk.grey(`Creating basic sprite inside '${join(fullPath, opts.subdirName)}' ...`));
+  console.log(chalk.grey(`Creating basic sprite inside '${opts.dest}' ...`));
   try {
-    await createRegularSprite();
+    await createRegularSprite(opts);
     console.log(chalk.grey('Basic sprite created.'));
     // After creation, read sprite and inject it with variables
     // Orignal sprite is then overridden
@@ -41,7 +39,7 @@ export const create = async (customOptions: Partial<ChameleonOptions> = {}): Pro
       chalk.hex('#FF5EDB')('chameleon') +
       chalk.hex('#FF5E84')('...'));
     console.log(chalk.grey('-------------------------------'));
-    await createInjectedSprite();
+    await createInjectedSprite(opts);
     // Done!
     if (opts.colors.apply) {
       if (colorChangeCount > 0) {
@@ -90,9 +88,9 @@ export const create = async (customOptions: Partial<ChameleonOptions> = {}): Pro
   }
 }
 
-async function createRegularSprite(): Promise<void> {
+async function createRegularSprite({ path, dest, name, dimensionStyles: { css, scss } }: ChameleonOptions): Promise<void> {
   const spriter = new sprite({
-    dest: fullPath,
+    dest,
     svg: {
       xmlDeclaration: false,
       doctypeDeclaration: false,
@@ -100,11 +98,11 @@ async function createRegularSprite(): Promise<void> {
     mode: {
       inline: true,
       symbol: {
-        dest: opts.subdirName,
-        sprite: opts.fileName + '.svg',
+        dest,
+        sprite: `${name}.svg`,
         render: {
-          css: opts.css ? { dest: opts.fileName + '.css' } : false,
-          scss: opts.scss ? { dest: opts.fileName + '.scss' } : false,
+          css: css.create ? { dest: css.dest } : false,
+          scss: scss.create ? { dest: scss.dest } : false,
         }
       }
     },
@@ -132,7 +130,7 @@ async function createRegularSprite(): Promise<void> {
   let svgs;
   // Add all SVGs to sprite
   try {
-    svgs = fs.readdirSync(fullPath);
+    svgs = fs.readdirSync(path);
   } catch (err) {
     throw err;
   }
@@ -140,18 +138,19 @@ async function createRegularSprite(): Promise<void> {
     let file;
     let optimizedFile;
 
-    if(item.endsWith('.svg')) {
+    if (item.endsWith('.svg')) {
       try {
-        const path = join(fullPath, item);
+        const svgPath = join(path, item);
 
-        file = fs.readFileSync(path, { encoding: 'utf-8' });
+        file = fs.readFileSync(svgPath, { encoding: 'utf-8' });
         if (!file) {
           console.log(chalk.yellow(`Skipping ${item}, because the file is empty...`));
           continue;
         }
-        const styleConvertedFile = await svgoConvertStyles.optimize(file, { path });
+
+        const styleConvertedFile = await svgoConvertStyles.optimize(file, { path: svgPath });
         optimizedFile = await svgoRemoveStyles.optimize(styleConvertedFile.data);
-        spriter.add(resolve(path), '', optimizedFile.data);
+        spriter.add(resolve(svgPath), '', optimizedFile.data);
         svgCount++;
       } catch (err) {
         throw err;
@@ -159,50 +158,58 @@ async function createRegularSprite(): Promise<void> {
     }
   }
 
-  if(svgCount) {
+  if (svgCount) {
     console.log(chalk.green(svgs.length) + chalk.grey(' SVGs found.'));
   } else {
-    throw new Error(`No SVG files found in '${fullPath}'. Make sure you are using the correct path.`)
+    throw new Error(`No SVG files found in '${path}'. Make sure you are using the correct path.`)
   }
   // Compile the sprite
-  spriter.compile(function(err: Error, result: Array<PlainObjectType>): void {
+  spriter.compile((err: Error, result: Array<PlainObjectType>): void => {
     if (err) {
       throw err;
     }
-    // @Todo(Chris): check if this is ever used
-    // this has no effect as far as i can see
+
     for (let mode in result) {
-        for (let resource in result[mode]) {
-            fs.mkdirSync(dirname(result[mode][resource].path), { recursive: true });
-            fs.writeFileSync(result[mode][resource].path, result[mode][resource].contents);
-        }
+      for (let resource in result[mode]) {
+        fs.mkdirSync(dirname(result[mode][resource].path), { recursive: true });
+        fs.writeFileSync(result[mode][resource].path, result[mode][resource].contents);
+      }
     }
   });
 }
 
-async function createInjectedSprite(): Promise<void> {
-  const filePath = join(fullPath, opts.subdirName, `${opts.fileName}.svg`)
-  const jsonSprite = getSvgJson(filePath) as INode ;
+async function createInjectedSprite(opts: ChameleonOptions): Promise<void> {
+  const filePath = join(opts.dest, `${opts.name}.svg`)
+  const jsonSprite = getSvgJson(filePath) as INode;
+
   jsonSprite.children.forEach((symbol: INode) => {
-    modifyAttributes(symbol, new Map(), new Map());
+    modifyAttributes(symbol, opts);
   });
-  fs.writeFileSync(`${fullPath}${opts.subdirName}/${opts.fileName}.svg`, svgson.stringify(jsonSprite));
+
+  fs.writeFileSync(filePath, svgson.stringify(jsonSprite));
 }
 
-function modifyAttributes(el: INode, registeredColors: Map<string, string>, registeredStrokeWidths: Map<string, string>) {
+function modifyAttributes(
+  el: INode,
+  opts: ChameleonOptions,
+  registeredColors = new Map<string, string>(),
+  registeredStrokeWidths = new Map<string, string>(),
+) {
+  const { colors, strokeWidths, transition } = opts;
+
   // TODO: Make Gradients work! (stop-color)
   if (el.attributes && el.name !== 'style') {
-    if (opts.colors.apply) {
+    if (colors.apply) {
       // FILL
       let fill = el.attributes.fill;
 
       if (fill && validValue(fill)) {
-        if(registeredColors.get(fill)) {
+        if (registeredColors.get(fill)) {
           // If fill color has already an assigned variable
           el.attributes.fill = registeredColors.get(fill) || '';
         } else {
           // If fill is a new color (gets registered)
-          let varFill = variablizeColor(fill, registeredColors.size + 1);
+          let varFill = variablizeColor(fill, registeredColors.size + 1, colors);
           registeredColors.set(fill, varFill);
           el.attributes.fill = varFill;
         }
@@ -216,7 +223,7 @@ function modifyAttributes(el: INode, registeredColors: Map<string, string>, regi
           el.attributes.stroke = registeredColors.get(stroke) || '';
         } else {
           // If color is a new color (gets registered)
-          let varStroke = variablizeColor(stroke, registeredColors.size + 1);
+          let varStroke = variablizeColor(stroke, registeredColors.size + 1, colors);
           registeredColors.set(stroke, varStroke);
           el.attributes.stroke = varStroke;
         }
@@ -224,7 +231,7 @@ function modifyAttributes(el: INode, registeredColors: Map<string, string>, regi
       }
     }
     // STROKE-WIDTH
-    if (opts.strokeWidths.apply) {
+    if (strokeWidths.apply) {
       let strokeWidth = el.attributes['stroke-width'];
       if (strokeWidth && validValue(strokeWidth)) {
         if (registeredStrokeWidths.get(strokeWidth)) {
@@ -232,7 +239,7 @@ function modifyAttributes(el: INode, registeredColors: Map<string, string>, regi
           el.attributes['stroke-width'] = registeredStrokeWidths.get(strokeWidth) || '';
         } else {
           // If stroke-width is a new stroke-width (gets registered)
-          let varStrokeWidth = variablizeStrokeWidth(strokeWidth, registeredStrokeWidths.size + 1);
+          let varStrokeWidth = variablizeStrokeWidth(strokeWidth, registeredStrokeWidths.size + 1, strokeWidths);
           registeredStrokeWidths.set(strokeWidth, varStrokeWidth);
           el.attributes['stroke-width'] = varStrokeWidth;
         }
@@ -240,7 +247,7 @@ function modifyAttributes(el: INode, registeredColors: Map<string, string>, regi
       }
     }
     // NON SCALING STROKE-WIDTH
-    if (opts.strokeWidths.nonScaling && el.attributes['stroke-width']) {
+    if (strokeWidths.nonScaling && el.attributes['stroke-width']) {
       let vectorEffect = el.attributes['vector-effect'];
       if (vectorEffect && !vectorEffect.includes('non-scaling-stroke')) {
         el.attributes['vector-effect'] = vectorEffect + ' non-scaling-stroke';
@@ -250,42 +257,43 @@ function modifyAttributes(el: INode, registeredColors: Map<string, string>, regi
     }
 
     // TRANSITION
-    if (opts.transition.apply) {
+    if (transition.apply) {
       // only apply transition to elements that actually need it
-      if(el.attributes.fill || el.attributes.stroke || el.attributes['stroke-width']) {
-        el.attributes.style = variablizeTransitionStyle(el.attributes.style);
+      if (el.attributes.fill || el.attributes.stroke || el.attributes['stroke-width']) {
+        el.attributes.style = variablizeTransitionStyle(el.attributes.style, transition);
         transitionApplyCount++;
       }
     }
   }
   // RECURSIVE FOR ALL CHILDREN
-  if(el.children.length) {
+  if (el.children.length) {
     el.children.forEach((child: INode) => {
-      modifyAttributes(child, registeredColors, registeredStrokeWidths);
+      modifyAttributes(child, opts, registeredColors, registeredStrokeWidths);
     });
   }
 }
 
-function variablizeColor(p_color: string, id: number): string {
-  const varStr = id === 1 ? `--${opts.colors.name}` : `--${opts.colors.name}-${id}`;
-  const color = opts.colors.preserveOriginal ? p_color : 'currentColor';
-  if (opts.colors.customVars && opts.colors.customVars[p_color]) {
-    return `var(${varStr}, var(--${opts.colors.customVars[p_color]}, ${color}))`
+function variablizeColor(p_color: string, id: number, { name, customVars, preserveOriginal }: ColorOptions): string {
+  const varStr = id === 1 ? `--${name}` : `--${name}-${id}`;
+  const color = preserveOriginal ? p_color : 'currentColor';
+  if (customVars && customVars[p_color]) {
+    return `var(${varStr}, var(--${customVars[p_color]}, ${color}))`
   }
   return `var(${varStr}, ${color})`;
 }
 
-function variablizeStrokeWidth(strokeWidth: string, id: number): string {
-  const varStr = id === 1 ? `--${opts.strokeWidths.name}` : `--${opts.strokeWidths.name}-${id}`;
-  if (opts.strokeWidths.customVars && opts.strokeWidths.customVars[strokeWidth]) {
-    return `var(${varStr}, var(--${opts.strokeWidths.customVars[strokeWidth]}, ${strokeWidth}))`
+function variablizeStrokeWidth(strokeWidth: string, id: number, { name, customVars }: StrokeWidthOptions): string {
+  const varStr = id === 1 ? `--${name}` : `--${name}-${id}`;
+  if (customVars && customVars[strokeWidth]) {
+    return `var(${varStr}, var(--${customVars[strokeWidth]}, ${strokeWidth}))`
   }
   return `var(${varStr}, ${strokeWidth})`;
 }
 
-function variablizeTransitionStyle(style: string) {
-  const varStr = `--${opts.transition.name}`;
-  const completeStr = opts.transition.default ? `var(${varStr}, ${opts.transition.default})` : `var(${varStr})`;
+function variablizeTransitionStyle(style: string, options: TransitionOptions): string {
+
+  const varStr = `--${options.name}`;
+  const completeStr = options.default ? `var(${varStr}, ${options.default})` : `var(${varStr})`;
   return style ? `${style} transition: ${completeStr};` : `transition: ${completeStr};`;
 }
 
@@ -311,7 +319,31 @@ function applyCustomOptions(customOptions: Partial<ChameleonOptions>): Chameleon
     customOptions.transition.apply = true;
   }
 
-  return deepMerge<ChameleonOptions>(getDefaultOptions(), customOptions);
+  if (customOptions.dimensionStyles) {
+    const css = customOptions.dimensionStyles.css;
+    const scss = customOptions.dimensionStyles.scss;
+    customOptions.dimensionStyles.css.create = css.create === true || css.name !== undefined || css.dest !== undefined;
+    customOptions.dimensionStyles.scss.create = scss.create === true || scss.name !== undefined || scss.dest !== undefined;
+  }
+
+  const options = deepMerge<ChameleonOptions>(getDefaultOptions(), customOptions);
+
+  options.path = getAbsolutePath(options.path);
+  options.dest = options.dest ? getAbsolutePath(options.dest) : join(options.path, options.name);
+
+
+  const css = options.dimensionStyles.css
+  const cssName = `${css.name || options.name}.css`;
+  const cssPath = getAbsolutePath(css.dest || options.dest);
+
+  const scss = options.dimensionStyles.scss
+  const scssName = `${scss.name || options.name}.scss`;
+  const scssPath = getAbsolutePath(scss.dest || options.dest);
+
+  css.dest = join(cssPath, cssName);
+  scss.dest = join(scssPath, scssName);
+
+  return options;
 }
 
 function handleError(err: Error): void {

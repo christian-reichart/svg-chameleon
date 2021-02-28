@@ -18,12 +18,23 @@ export type ColorOptions = BaseOptions & {
 export type TransitionOptions = BaseOptions & {
     default?: string;
 }
+
+export type StylesOptions = {
+    create: boolean,
+    dest?: string,
+    name?: string,
+}
+
+export type DimensionStylesOptions = {
+    css: StylesOptions,
+    scss: StylesOptions,
+}
+
 export interface ChameleonOptions {
     path: string;
-    subdirName: string;
-    fileName: string;
-    css: boolean;
-    scss: boolean;
+    dest: string;
+    name: string;
+    dimensionStyles: DimensionStylesOptions,
     colors: ColorOptions;
     strokeWidths: StrokeWidthOptions;
     transition: TransitionOptions;
