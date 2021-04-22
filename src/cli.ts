@@ -1,6 +1,6 @@
 #! /usr/bin/env node
 import { ChameleonOptions } from './lib/interfaces';
-import * as chameleon  from './';
+import * as chameleon from './';
 import chalk from 'chalk';
 import yargs from 'yargs';
 import  findUp from 'find-up';
@@ -114,4 +114,3 @@ async function init(options: ChameleonOptions): Promise<void> {
 }
 
 export default argv;
-

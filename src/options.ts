@@ -6,10 +6,20 @@ import { PlainObjectType } from './lib/types';
  */
 export const getDefaultOptions = (): ChameleonOptions => ({
   path: '',
-  subdirName: 'chameleon-sprite',
-  fileName: 'chameleon-sprite',
-  css: false,
-  scss: false,
+  dest: '',
+  name: 'chameleon-sprite',
+  dimensionStyles: {
+    css: {
+      create: false,
+      dest: undefined,
+      name: undefined,
+    },
+    scss: {
+      create: false,
+      dest: undefined,
+      name: undefined,
+    }
+  },
   colors: {
     apply: true,
     name: 'svg-custom-color',
