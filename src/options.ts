@@ -37,34 +37,28 @@ export const getDefaultOptions = (): ChameleonOptions => ({
   },
 });
 
-function getCustomVarsAsObject(customVars: Array<PlainObjectType | string>): PlainObjectType {
+function getCustomVarsAsObject(customVars: PlainObjectType | string): PlainObjectType {
+
   let obj: PlainObjectType = {};
-  customVars.forEach(customVar => {
-    if (typeof customVar !== 'string') {
-      obj = {
-        ...obj,
-        ...customVar,
-      };
-    } else {
-      let splits = customVar.split(',');
-      splits.forEach((pair: string) => {
-        let pairSplits = pair.split(':');
-        if (pairSplits.length !== 2) {
-          throw new Error("Couldn't parse format for custom vars! Please use '<to-replace>:<custom-var-name>'.");
-        }
-        obj[pairSplits[0]] = pairSplits[1];
-      });
-    }
-  });
+
+  if (typeof customVars !== 'string') {
+    obj = customVars;
+  } else {
+    let splits = customVars.split(',');
+    splits.forEach((pair: string) => {
+      let pairSplits = pair.split(':');
+      if (pairSplits.length !== 2) {
+        throw new Error("Couldn't parse format for custom vars! Please use '<to-replace>:<custom-var-name>'.");
+      }
+      obj[pairSplits[0]] = pairSplits[1];
+    });
+  }
+
   return obj;
 }
 
 function setupCustomVars(customVars: Array<PlainObjectType> | PlainObjectType): PlainObjectType {
-  const checkIsArray = (value: Array<PlainObjectType> | PlainObjectType) : value is Array<PlainObjectType> => {
-    return Array.isArray(value);
-  };
-
-  return checkIsArray(customVars) ? getCustomVarsAsObject(customVars) : customVars;
+  return getCustomVarsAsObject(customVars);
 }
 
 export const setupOptions = (options: ChameleonOptions): ChameleonOptions => {

@@ -7,4 +7,4 @@ import { isAbsolute, join } from 'path';
  * 
  * @param {string} path
  */
-export const getAbsolutePath = (path: string): string => isAbsolute(path) === true ? path : join(process.cwd(), path);
+export const getAbsolutePath = (path: string): string => isAbsolute(path) ? path : join(process.cwd(), path);

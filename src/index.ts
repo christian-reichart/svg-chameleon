@@ -322,8 +322,8 @@ function applyCustomOptions(customOptions: Partial<ChameleonOptions>): Chameleon
   if (customOptions.dimensionStyles) {
     const css = customOptions.dimensionStyles.css;
     const scss = customOptions.dimensionStyles.scss;
-    customOptions.dimensionStyles.css.create = css.create === true || css.name !== undefined || css.dest !== undefined;
-    customOptions.dimensionStyles.scss.create = scss.create === true || scss.name !== undefined || scss.dest !== undefined;
+    customOptions.dimensionStyles.css.create = css.create || css.name !== undefined || css.dest !== undefined;
+    customOptions.dimensionStyles.scss.create = scss.create || scss.name !== undefined || scss.dest !== undefined;
   }
 
   const options = deepMerge<ChameleonOptions>(getDefaultOptions(), customOptions);
@@ -332,11 +332,11 @@ function applyCustomOptions(customOptions: Partial<ChameleonOptions>): Chameleon
   options.dest = options.dest ? getAbsolutePath(options.dest) : join(options.path, options.name);
 
 
-  const css = options.dimensionStyles.css
+  const css = options.dimensionStyles.css;
   const cssName = `${css.name || options.name}.css`;
   const cssPath = getAbsolutePath(css.dest || options.dest);
 
-  const scss = options.dimensionStyles.scss
+  const scss = options.dimensionStyles.scss;
   const scssName = `${scss.name || options.name}.scss`;
   const scssPath = getAbsolutePath(scss.dest || options.dest);
 
