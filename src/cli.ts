@@ -10,8 +10,6 @@ const configPath = findUp.sync(['chameleon.config.json', 'chameleon.config.js'])
 
 const config = configPath ? JSON.parse(fs.readFileSync(configPath).toString()) : {};
 
-// @Todo(phil): missing dest / config options
-
 const { argv } = yargs
     .option('dimensionStyles.css.create', {
         type: 'boolean',
