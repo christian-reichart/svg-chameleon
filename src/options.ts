@@ -1,10 +1,5 @@
-import findUp from 'find-up';
-import chalk from 'chalk';
-import { getAbsolutePath } from './util';
 import { ChameleonOptions } from './lib/interfaces';
-
-const configFileNames = ['chameleon.config.js', 'chameleon.config.json'];
-
+import { PlainObjectType } from './lib/types';
 /**
  * Get default options
  * Return a new instance to prevent possible mutabillity issues
@@ -42,30 +37,41 @@ export const getDefaultOptions = (): ChameleonOptions => ({
   },
 });
 
-/**
- * Get config path
- *
- * @param { string | undefined } path
- */
-const getConfigPath = async (path: string | undefined): Promise<string | undefined> => {
-  return path !== undefined ? getAbsolutePath(path) : await findUp(configFileNames)
-}
+function getCustomVarsAsObject(customVars: PlainObjectType | string): PlainObjectType {
 
-/**
- * Get options from config file
- *
- * @param { string | undefined } path
- */
-export const getOptionsFromConfigFile = async (path: string | undefined): Promise<ChameleonOptions> => {
-  const configPath = await getConfigPath(path);
+  let obj: PlainObjectType = {};
 
-  try {
-    if (configPath) {
-      console.log(chalk.grey(`Found config file under '${configPath}.'`));
-    }
-    return configPath !== undefined ? require(configPath) : {};
-  } catch (error) {
-    throw new Error(`There was a problem loading your config file. ` + error);
+  if (typeof customVars !== 'string') {
+    obj = customVars;
+  } else {
+    let splits = customVars.split(',');
+    splits.forEach((pair: string) => {
+      let pairSplits = pair.split(':');
+      if (pairSplits.length !== 2) {
+        throw new Error("Couldn't parse format for custom vars! Please use '<to-replace>:<custom-var-name>'.");
+      }
+      obj[pairSplits[0]] = pairSplits[1];
+    });
   }
+
+  return obj;
 }
 
+function setupCustomVars(customVars: Array<PlainObjectType> | PlainObjectType): PlainObjectType {
+  return getCustomVarsAsObject(customVars);
+}
+
+export const setupOptions = (options: ChameleonOptions): ChameleonOptions => {
+
+  return {
+    ...options,
+    colors: {
+      ...options.colors,
+      customVars: setupCustomVars(options.colors.customVars || {}),
+    },
+    strokeWidths: {
+      ...options.strokeWidths,
+      customVars: setupCustomVars(options.strokeWidths.customVars || {}),
+    },
+  };
+};
