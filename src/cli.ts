@@ -1,3 +1,5 @@
+#! /usr/bin/env node
+
 import { PlainObjectType } from './lib/types';
 import { ChameleonOptions } from './lib/interfaces';
 import * as chameleon from './';

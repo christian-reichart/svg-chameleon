@@ -1,6 +1,6 @@
 {
   "name": "svg-chameleon",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "A node module used for creating a customizable SVG sprite, containing SVGs as symbols that can be customized in the frontend using CSS variables and more.",
   "main": "./dist/index.js",
   "bin": "./dist/cli.js",
