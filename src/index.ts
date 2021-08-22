@@ -91,6 +91,9 @@ export const create = async (customOptions: Partial<ChameleonOptions> = {}): Pro
 async function createRegularSprite({ path, dest, name, dimensionStyles: { css, scss } }: ChameleonOptions): Promise<void> {
   const spriter = new sprite({
     dest,
+    shape: {
+      transform: [],
+    },
     svg: {
       xmlDeclaration: false,
       doctypeDeclaration: false,
@@ -115,17 +118,31 @@ async function createRegularSprite({ path, dest, name, dimensionStyles: { css, s
 
   //This SVGO configuration converts styles from a <style> tag to inline attributes
   const svgoConvertStyles = new SVGO({
-    plugins: [{
-      inlineStyles: {
-        onlyMatchedOnce: false
+    plugins: [
+      {
+        inlineStyles: {
+          onlyMatchedOnce: false
+        },
       },
-    }]
+      {
+        removeUnknownsAndDefaults: {
+          defaultAttrs: false,
+        }
+      },
+    ]
   });
   // This SVGO configuration removes all style tags.
   const svgoRemoveStyles = new SVGO({
-    plugins: [{
-      removeStyleElement: true,
-    }]
+    plugins: [
+      {
+        removeStyleElement: true,
+      },
+      {
+        removeUnknownsAndDefaults: {
+          defaultAttrs: false,
+        }
+      },
+    ]
   });
   let svgs;
   // Add all SVGs to sprite
