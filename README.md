@@ -4,6 +4,20 @@
 
 SVG Chameleon creates a ```<symbol>``` sprite out of your SVG files that lets you easily modify colors and stroke-widths via CSS variables. It works with any SVGs, so no need for the designer or the developer to fiddle around with export options or the SVG markup. Thanks to the injected CSS variables, you don't need to worry about the Shadow DOM or specific tags of your SVG, just set your variables somewhere and they will cascade down to your SVG markup.
 
+## Installation
+
+``` bash
+# install locally to your project with npm
+npm i svg-chameleon --save-dev
+```
+
+## Command Line Usage
+
+``` bash
+# Example with path option
+npx svg-chameleon --path=path/to/svg/directory/
+```
+
 ## How it works
 
 SVG Chameleon does two things:
@@ -44,23 +58,9 @@ Just set these variables globally or scoped for specific SVGs.
 }
 ```
 
-Provided you wrap the SVG with a ```<div class="circle-wrapper>```, the CSS above would result in the circle having a blue fill, a red outline and a stroke-width of 4 (original value, since no variable was specified). You can also set transitions on the SVG for smooth animations. See options below.
+Provided you wrap the SVG with a ```<div class="circle-wrapper">```, the CSS above would result in the circle having a blue fill, a red outline and a stroke-width of 4 (original value, since no variable was specified). You can also set transitions on the SVG for smooth animations. See options below.
 
 > Note: The specific namings (like ```--svg-custom-color``` and ```--svg-custom-color-2```) are scoped to each SVG, meaning the original value of ```--svg-custom-color``` on one SVG doesn't necessarily have to be the same on another SVG. If you want consistent variables for specific colors, you can set custom vars in the options.
-
-## Installation
-
-``` bash
-# install locally to your project with npm
-npm i svg-chameleon --save-dev
-```
-
-## Command Line Usage
-
-``` bash
-# Example with path option
-npx svg-chameleon --path=path/to/svg/directory/
-```
 
 ## Options
 
