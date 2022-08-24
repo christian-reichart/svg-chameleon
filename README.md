@@ -137,7 +137,7 @@ Alternatively a `--config` option with a path to the configuration file can be p
 | `--c-custom-vars` | `--c-custom-vars='#D8D8D8:color-grey,#A3FF5E:color-primary'` | colors.customVars |
 | `--sw-apply` | `--sw-apply=false` | strokeWidths.apply |
 | `--sw-name` | `--sw-name=my-stroke-width-var-naming` | strokeWidths.name |
-| `--sw-non-scaling` | `--sw-non-scaling` | strokeWidths.noScaling |
+| `--sw-non-scaling` | `--sw-non-scaling` | strokeWidths.nonScaling |
 | `--sw-custom-vars` | `--sw-custom-vars='1:stroke-thin,3.5:stroke-bold'` | strokeWidths.customVars |
 | `--t-apply` | `--t-apply` | transition.apply |
 | `--t-name` | `--t-name=my-transition-var-name` | transition.name |
