@@ -52,13 +52,18 @@ You can now just set these variables in your CSS and it will affect the SVG, eve
 Just set these variables globally or scoped for specific SVGs.
 
 ```css
-.circle-wrapper {
+#my-svg {
   --svg-custom-color: blue;
   --svg-custom-color-2: red;
 }
 ```
 
-Provided you wrap the SVG with a ```<div class="circle-wrapper">```, the CSS above would result in the circle having a blue fill, a red outline and a stroke-width of 4 (original value, since no variable was specified). You can also set transitions on the SVG for smooth animations. See options below.
+```html
+<svg id="my-svg" viewBox="0 0 100 100">
+  <use xlink:href="http://your-url.com/chameleon-sprite.svg#circle-1"/>
+</svg>
+```,
+The CSS above would result in the circle having a blue fill, a red outline and a stroke-width of 4 (original value, since no variable was specified). You can also set transitions on the SVG for smooth animations. See options below.
 
 > Note: The specific namings (like ```--svg-custom-color``` and ```--svg-custom-color-2```) are scoped to each SVG, meaning the original value of ```--svg-custom-color``` on one SVG doesn't necessarily have to be the same on another SVG. If you want consistent variables for specific colors, you can set custom vars in the options.
 
