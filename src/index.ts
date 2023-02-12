@@ -7,10 +7,10 @@ import { getDefaultOptions } from './options';
 import * as fs from 'fs';
 import { join, dirname, resolve } from 'path';
 import chalk from 'chalk';
-import SVGO from 'svgo';
 import sprite from 'svg-sprite';
 import * as svgson from 'svgson';
 import { INode } from 'svgson';
+import { optimize } from 'svgo';
 
 let svgCount: number = 0;
 let colorChangeCount: number = 0;
@@ -111,39 +111,6 @@ async function createRegularSprite({ path, dest, name, dimensionStyles: { css, s
     },
   });
 
-  /* Apperently, converting styles and removing style tag at the same time with SVGO doesn't seem to work.
-   * Right now, I just optimize 2 times with different options.
-   * Holzhammermethode! :D
-   */
-
-  //This SVGO configuration converts styles from a <style> tag to inline attributes
-  const svgoConvertStyles = new SVGO({
-    plugins: [
-      {
-        inlineStyles: {
-          onlyMatchedOnce: false
-        },
-      },
-      {
-        removeUnknownsAndDefaults: {
-          defaultAttrs: false,
-        }
-      },
-    ]
-  });
-  // This SVGO configuration removes all style tags.
-  const svgoRemoveStyles = new SVGO({
-    plugins: [
-      {
-        removeStyleElement: true,
-      },
-      {
-        removeUnknownsAndDefaults: {
-          defaultAttrs: false,
-        }
-      },
-    ]
-  });
   let svgs;
   // Add all SVGs to sprite
   try {
@@ -165,8 +132,42 @@ async function createRegularSprite({ path, dest, name, dimensionStyles: { css, s
           continue;
         }
 
-        const styleConvertedFile = await svgoConvertStyles.optimize(file, { path: svgPath });
-        optimizedFile = await svgoRemoveStyles.optimize(styleConvertedFile.data);
+        /*
+        * Apperently, converting styles and removing style tag at the same time with SVGO doesn't seem to work.
+        * Right now, I just optimize 2 times with different options.
+        * Holzhammermethode! :D
+        */
+
+        //This SVGO configuration converts styles from a <style> tag to inline attributes
+        const styleConvertedFile = optimize(file, { path: svgPath,
+          
+            plugins: [
+              {
+                name: 'inlineStyles',
+                params: {
+                  onlyMatchedOnce: false
+                },
+              },
+              {
+                name: 'removeUnknownsAndDefaults',
+                params: {
+                  defaultAttrs: false,
+                }
+              },
+            ]
+          });
+
+        // This SVGO configuration removes all style tags.
+        optimizedFile = optimize(styleConvertedFile.data, {
+          plugins: ['removeStyleElement',
+            {
+              name: 'removeUnknownsAndDefaults',
+              params: {
+                defaultAttrs: false,
+              }
+            },
+          ]
+        });
         spriter.add(resolve(svgPath), '', optimizedFile.data);
         svgCount++;
       } catch (err) {
@@ -363,7 +364,7 @@ function applyCustomOptions(customOptions: Partial<ChameleonOptions>): Chameleon
   return options;
 }
 
-function handleError(err: Error): void {
+function handleError(err: unknown): void {
   console.error(chalk.redBright(err));
 }
 
